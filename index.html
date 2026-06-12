@@ -4,616 +4,311 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Orlix — Personal AI Operating System</title>
-<meta name="description" content="Orlix is a governance layer for personal AI — a persistent world model that turns any assistant into a system that observes, decides, acts, and verifies. Every action is policy-bound and fully auditable.">
-
-<!-- Open Graph / Social -->
+<meta name="description" content="Orlix is a governance layer for personal AI — persistent memory, evolving policies, full audit trail. Every action is policy-bound and fully auditable.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://orlixai.xyz">
 <meta property="og:title" content="Orlix — Personal AI Operating System">
-<meta property="og:description" content="Stop prompt-chasing. Own the control layer. Orlix is a governance layer for personal AI — persistent memory, evolving policies, full audit trail.">
-<meta property="og:site_name" content="Orlix">
-
-<!-- Twitter Card -->
+<meta property="og:description" content="Stop prompt-chasing. Own the control layer. Governance infrastructure for personal AI.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Orlix — Personal AI Operating System">
-<meta name="twitter:description" content="Stop prompt-chasing. Own the control layer. A governance layer for personal AI.">
-
-<!-- Canonical -->
+<meta name="twitter:description" content="Stop prompt-chasing. Own the control layer.">
 <link rel="canonical" href="https://orlixai.xyz">
-
-<!-- Favicon — inline SVG -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230d0a08'/><text x='50%25' y='72%25' font-family='monospace' font-size='20' font-weight='bold' fill='%23ff9a52' text-anchor='middle'>✦</text></svg>">
-
-<!-- Fonts -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230d0a08'/><text x='50%25' y='73%25' font-family='monospace' font-size='19' font-weight='bold' fill='%23ff9a52' text-anchor='middle'>✦</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-
 <style>
-/* ===================================================================
-   DESIGN TOKENS
-   =================================================================== */
-:root {
-  --bg:          #0d0a08;
-  --bg-panel:    #15100c;
-  --bg-card:     #181210;
-  --bg-input:    #1b1411;
-  --line:        #2c2218;
-  --line-bright: #42301f;
-  --text:        #d8cfc4;
-  --bright:      #fbf3ea;
-  --dim:         #8a7a6c;
-  --dim-2:       #5c4f44;
-  --amber:       #ff9a52;
-  --amber-soft:  rgba(255,154,82,.12);
-  --amber-glow:  rgba(255,154,82,.06);
-  --violet:      #b9a4ff;
-  --violet-soft: rgba(185,164,255,.12);
-  --red:         #ff6b6b;
-  --green:       #7ee0a8;
-  --green-soft:  rgba(126,224,168,.1);
-  --mono:        'JetBrains Mono', monospace;
-  --radius:      8px;
-  --trans:       .15s ease;
+:root{
+  --bg:#0d0a08;--bg-panel:#15100c;--bg-card:#181210;--bg-input:#1b1411;
+  --line:#2c2218;--line-bright:#42301f;
+  --text:#d8cfc4;--bright:#fbf3ea;--dim:#8a7a6c;--dim-2:#5c4f44;
+  --amber:#ff9a52;--amber-soft:rgba(255,154,82,.12);--amber-glow:rgba(255,154,82,.06);
+  --violet:#b9a4ff;--violet-soft:rgba(185,164,255,.12);
+  --red:#ff6b6b;--green:#7ee0a8;--green-soft:rgba(126,224,168,.08);
+  --mono:'JetBrains Mono',monospace;--r:8px;--tr:.15s ease;
 }
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+html,body{background:var(--bg);color:var(--text)}
+body{font-family:var(--mono);font-size:14px;line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::selection{background:var(--amber);color:#1a0f06}
+a{color:var(--violet);text-decoration:none;border-bottom:1px dotted rgba(185,164,255,.4);transition:color var(--tr),border-color var(--tr)}
+a:hover{color:var(--bright);border-bottom-color:var(--bright)}
+.wrap{max-width:920px;margin:0 auto;padding:0 20px}
+button{font-family:var(--mono);cursor:pointer}
+input,select,textarea{font-family:var(--mono)}
 
-/* ===================================================================
-   RESET & BASE
-   =================================================================== */
-*, *::before, *::after {
-  margin: 0; padding: 0;
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-}
-html { scroll-behavior: smooth; }
-html, body { background: var(--bg); color: var(--text); }
-body {
-  font-family: var(--mono);
-  font-size: 14px;
-  line-height: 1.65;
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
-}
-::selection { background: var(--amber); color: #1a0f06; }
-a {
-  color: var(--violet);
-  text-decoration: none;
-  border-bottom: 1px dotted rgba(185,164,255,.4);
-  transition: color var(--trans), border-color var(--trans);
-}
-a:hover { color: var(--bright); border-bottom-color: var(--bright); }
-.wrap { max-width: 900px; margin: 0 auto; padding: 0 20px; }
-button { font-family: var(--mono); cursor: pointer; }
-input, select, textarea { font-family: var(--mono); }
-img { max-width: 100%; display: block; }
+/* CRT / VIGNETTE */
+.crt{position:fixed;inset:0;pointer-events:none;z-index:50;mix-blend-mode:overlay;opacity:.3}
+.crt::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(to bottom,rgba(255,255,255,.016) 0px,rgba(255,255,255,.016) 1px,transparent 1px,transparent 3px)}
+.vignette{position:fixed;inset:0;pointer-events:none;z-index:49;background:radial-gradient(ellipse 85% 70% at 50% 25%,transparent 40%,rgba(0,0,0,.6) 100%)}
 
-/* ===================================================================
-   CRT / VIGNETTE OVERLAY
-   =================================================================== */
-.crt {
-  position: fixed; inset: 0;
-  pointer-events: none; z-index: 50;
-  mix-blend-mode: overlay; opacity: .35;
-}
-.crt::before {
-  content: ""; position: absolute; inset: 0;
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(255,255,255,.018) 0px, rgba(255,255,255,.018) 1px,
-    transparent 1px, transparent 3px
-  );
-}
-.vignette {
-  position: fixed; inset: 0;
-  pointer-events: none; z-index: 49;
-  background: radial-gradient(ellipse 85% 70% at 50% 25%, transparent 40%, rgba(0,0,0,.65) 100%);
-}
+/* TITLEBAR */
+.titlebar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(13,10,8,.93);backdrop-filter:blur(14px) saturate(1.2);border-bottom:1px solid var(--line)}
+.titlebar-in{display:flex;align-items:center;justify-content:space-between;height:46px;font-size:.76rem;color:var(--dim)}
+.tb-left{display:flex;align-items:center;gap:10px;min-width:0}
+.tb-dots{display:flex;gap:5px;flex-shrink:0}
+.tb-dots span{display:inline-block;width:10px;height:10px;border-radius:50%}
+.tb-dots .r{background:var(--red)}.tb-dots .y{background:var(--amber)}.tb-dots .g{background:var(--green)}
+.tb-title{color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb-right{display:flex;gap:14px;align-items:center;flex-shrink:0}
+.tb-right button,.tb-right a{background:none;border:none;color:var(--dim);font-size:.76rem;padding:0;transition:color var(--tr)}
+.tb-right button:hover,.tb-right a:hover{color:var(--amber)}
+.tb-right a{border-bottom:none}
+.live{color:var(--green);display:flex;align-items:center;gap:5px}
+.pip{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse-pip 2s ease-in-out infinite}
+@keyframes pulse-pip{0%,100%{opacity:1}50%{opacity:.35}}
+@media(max-width:640px){.tb-right .hide-sm{display:none}}
 
-/* ===================================================================
-   TITLEBAR
-   =================================================================== */
-.titlebar {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  background: rgba(13,10,8,.92);
-  backdrop-filter: blur(12px) saturate(1.2);
-  border-bottom: 1px solid var(--line);
-}
-.titlebar-in {
-  display: flex; align-items: center;
-  justify-content: space-between;
-  height: 46px; font-size: .76rem; color: var(--dim);
-}
-.tb-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.tb-dots { display: flex; gap: 5px; flex-shrink: 0; }
-.tb-dots span {
-  display: inline-block; width: 10px; height: 10px; border-radius: 50%;
-}
-.tb-dots .r { background: var(--red); }
-.tb-dots .y { background: var(--amber); }
-.tb-dots .g { background: var(--green); }
-.tb-title {
-  color: var(--text); white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis;
-}
-.tb-right { display: flex; gap: 16px; align-items: center; flex-shrink: 0; }
-.tb-right button {
-  background: none; border: none; color: var(--dim);
-  font-size: .76rem; padding: 0;
-  transition: color var(--trans);
-}
-.tb-right button:hover { color: var(--amber); }
-.tb-right a {
-  border-bottom: none; color: var(--dim); font-size: .76rem;
-}
-.tb-right a:hover { color: var(--amber); }
-.tb-right .live {
-  color: var(--green); display: flex; align-items: center; gap: 5px;
-}
-.tb-right .live .pip {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 8px var(--green);
-  animation: pulse-pip 2s ease-in-out infinite;
-}
-@keyframes pulse-pip {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: .4; }
-}
-@media (max-width: 620px) {
-  .tb-right .docs-link,
-  .tb-right .github-link { display: none; }
-}
+/* LAYOUT */
+main{padding-top:46px}
+.crumb{color:var(--dim);font-size:.76rem;padding:20px 0 8px;display:flex;flex-wrap:wrap;align-items:center;gap:0}
+.crumb .sep{color:var(--dim-2);margin:0 6px}.crumb .root{color:var(--violet)}.crumb .here{color:var(--amber)}
 
-/* ===================================================================
-   LAYOUT
-   =================================================================== */
-main { padding-top: 46px; }
-.crumb {
-  color: var(--dim); font-size: .76rem;
-  padding: 20px 0 8px;
-  display: flex; flex-wrap: wrap; align-items: center; gap: 0;
-}
-.crumb .sep    { color: var(--dim-2); margin: 0 6px; }
-.crumb .root   { color: var(--violet); }
-.crumb .here   { color: var(--amber); }
+/* PROMPT */
+.ps1{color:var(--amber);flex-shrink:0}
+.ps1 .user{color:var(--green)}.ps1 .path{color:var(--violet)}.ps1 .sym{color:var(--dim)}
+.cmdline{color:var(--bright);word-break:break-all}
+.out{color:var(--text);margin-top:4px;line-height:1.7}
+.dim{color:var(--dim)}.ok{color:var(--green)}.warn{color:var(--amber)}.bad{color:var(--red)}.hl{color:var(--violet)}.amber-hl{color:var(--amber)}.muted{color:var(--dim);font-size:.8rem}
 
-/* ===================================================================
-   PROMPT STYLES
-   =================================================================== */
-.ps1         { color: var(--amber); flex-shrink: 0; }
-.ps1 .user   { color: var(--green); }
-.ps1 .path   { color: var(--violet); }
-.ps1 .sym    { color: var(--dim); }
-.cmdline     { color: var(--bright); word-break: break-all; }
-.out         { color: var(--text); margin-top: 4px; line-height: 1.7; }
-.dim         { color: var(--dim); }
-.ok          { color: var(--green); }
-.warn        { color: var(--amber); }
-.bad         { color: var(--red); }
-.hl          { color: var(--violet); }
-.amber-hl    { color: var(--amber); }
-.muted       { color: var(--dim); font-size: .8rem; }
+/* SECTIONS */
+section{padding:52px 0;border-bottom:1px solid var(--line)}
+section:last-of-type{border-bottom:none}
+.sec-head{margin-bottom:24px}
+.sec-head .file{color:var(--dim);font-size:.78rem;margin-bottom:8px;word-break:break-all}
+.sec-head h2{font-size:1.05rem;font-weight:600;color:var(--bright);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sec-head h2 .num{color:var(--amber);font-size:.85em}
+.fade-in{opacity:0;transform:translateY(20px);transition:opacity .55s ease,transform .55s ease}
+.fade-in.visible{opacity:1;transform:none}
 
-/* ===================================================================
-   SECTIONS
-   =================================================================== */
-section {
-  padding: 52px 0;
-  border-bottom: 1px solid var(--line);
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity .5s ease, transform .5s ease;
-}
-section.fade-in {
-  opacity: 0;
-  transform: translateY(18px);
-}
-section:last-of-type { border-bottom: none; }
-.sec-head { margin-bottom: 24px; }
-.sec-head .file {
-  color: var(--dim); font-size: .78rem;
-  margin-bottom: 8px; word-break: break-all;
-}
-.sec-head h2 {
-  font-size: 1.05rem; font-weight: 600; color: var(--bright);
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-}
-.sec-head h2 .num { color: var(--amber); font-size: .85em; }
+/* HERO */
+.hero{padding:62px 0 50px}
+.boot{white-space:pre-wrap;word-break:break-word;font-size:.82rem;color:var(--dim);min-height:190px;line-height:1.8}
+.cursor{display:inline-block;width:.5em;height:1.05em;background:var(--amber);vertical-align:text-bottom;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.hero-title{font-size:clamp(1.5rem,5.4vw,2.6rem);font-weight:700;color:var(--bright);line-height:1.28;margin:28px 0 14px;word-wrap:break-word}
+.hero-sub{color:var(--text);max-width:66ch;margin-bottom:22px;font-size:.92rem;line-height:1.9}
 
-/* ===================================================================
-   HERO / BOOT SEQUENCE
-   =================================================================== */
-.hero { padding: 60px 0 48px; }
-.boot {
-  white-space: pre-wrap; word-break: break-word;
-  font-size: .82rem; color: var(--dim);
-  min-height: 188px; line-height: 1.8;
-}
-.cursor {
-  display: inline-block; width: .5em; height: 1.05em;
-  background: var(--amber); vertical-align: text-bottom;
-  animation: blink 1s steps(1) infinite;
-}
-@keyframes blink { 50% { opacity: 0; } }
+/* CMD BUTTONS */
+.cmd-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.cmd-btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line-bright);border-radius:6px;padding:11px 18px;font-size:.82rem;color:var(--text);background:var(--bg-panel);transition:border-color var(--tr),color var(--tr),background var(--tr),transform .1s}
+.cmd-btn .pfx{color:var(--amber)}
+.cmd-btn:hover{border-color:var(--amber);color:var(--bright);background:var(--amber-glow)}
+.cmd-btn.primary{border-color:var(--amber);color:var(--amber)}
+.cmd-btn.primary:hover{background:var(--amber-soft);color:var(--bright)}
+.cmd-btn:active{transform:translateY(1px)}
 
-.hero-title {
-  font-size: clamp(1.5rem, 5.2vw, 2.5rem);
-  font-weight: 700; color: var(--bright);
-  line-height: 1.3; margin: 28px 0 14px; word-wrap: break-word;
-}
-.hero-sub {
-  color: var(--text); max-width: 66ch;
-  margin-bottom: 22px; font-size: .92rem; line-height: 1.9;
-}
+/* TERMINAL */
+.terminal{border:1px solid var(--line);border-radius:var(--r);background:var(--bg-panel);margin-top:28px;overflow:hidden}
+.term-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);background:#120e0b;flex-wrap:wrap}
+.term-bar .dots{display:flex;gap:5px}
+.term-bar .dots span{display:inline-block;width:9px;height:9px;border-radius:50%}
+.term-bar .lbl{margin-left:8px;color:var(--dim);font-size:.74rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.clear-btn{background:none;border:1px solid var(--line-bright);border-radius:4px;color:var(--dim);font-size:.7rem;padding:3px 8px;flex-shrink:0;transition:color var(--tr),border-color var(--tr)}
+.clear-btn:hover{color:var(--amber);border-color:var(--amber)}
+.term-body{padding:14px 16px;min-height:220px;max-height:440px;overflow-y:auto;font-size:.82rem}
+.term-body::-webkit-scrollbar{width:6px}
+.term-body::-webkit-scrollbar-thumb{background:var(--line-bright);border-radius:4px}
+.term-log{margin-bottom:8px}
+.term-log:last-child{margin-bottom:0}
+.ps1-row{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
+.term-input-row{display:flex;align-items:center;gap:8px;padding:11px 16px;border-top:1px solid var(--line);background:var(--bg-input)}
+#termInput{flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--bright);font-size:.82rem;caret-color:var(--amber)}
+.send-btn{background:none;border:1px solid var(--line-bright);border-radius:4px;color:var(--dim);font-size:.74rem;padding:5px 10px;flex-shrink:0;transition:color var(--tr),border-color var(--tr)}
+.send-btn:hover{color:var(--amber);border-color:var(--amber)}
+@media(max-width:540px){.send-btn{display:none}}
+.term-hint{padding:9px 16px;font-size:.72rem;color:var(--dim);border-top:1px solid var(--line);background:#120e0b;line-height:1.8}
+.term-hint code{color:var(--violet);background:var(--violet-soft);padding:1px 5px;border-radius:3px;white-space:nowrap}
 
-/* ===================================================================
-   COMMAND BUTTONS
-   =================================================================== */
-.cmd-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 22px; }
-.cmd-btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  border: 1px solid var(--line-bright); border-radius: 6px;
-  padding: 11px 18px; font-size: .82rem; color: var(--text);
-  background: var(--bg-panel);
-  transition: border-color var(--trans), color var(--trans),
-              background var(--trans), transform .1s;
-}
-.cmd-btn .pfx { color: var(--amber); }
-.cmd-btn:hover {
-  border-color: var(--amber);
-  color: var(--bright);
-  background: var(--amber-glow);
-}
-.cmd-btn.primary { border-color: var(--amber); color: var(--amber); }
-.cmd-btn.primary:hover { background: var(--amber-soft); color: var(--bright); }
-.cmd-btn:active { transform: translateY(1px); }
+/* STATS BAR */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:8px}
+.stat-cell{background:var(--bg-panel);padding:18px 16px;text-align:center}
+.stat-num{color:var(--amber);font-weight:700;font-size:1.3rem;line-height:1}
+.stat-lbl{color:var(--dim);font-size:.72rem;margin-top:5px}
+@media(max-width:640px){.stats-bar{grid-template-columns:repeat(2,1fr)}}
 
-/* ===================================================================
-   TERMINAL WIDGET
-   =================================================================== */
-.terminal {
-  border: 1px solid var(--line); border-radius: var(--radius);
-  background: var(--bg-panel); margin-top: 28px; overflow: hidden;
-}
-.term-bar {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 14px; border-bottom: 1px solid var(--line);
-  background: #120e0b; flex-wrap: wrap;
-}
-.term-bar .dots { display: flex; gap: 5px; }
-.term-bar .dots span {
-  display: inline-block; width: 9px; height: 9px; border-radius: 50%;
-}
-.term-bar .lbl {
-  margin-left: 8px; color: var(--dim); font-size: .74rem;
-  flex: 1; min-width: 0; overflow: hidden;
-  text-overflow: ellipsis; white-space: nowrap;
-}
-.term-bar .clear-btn {
-  background: none; border: 1px solid var(--line-bright);
-  border-radius: 4px; color: var(--dim); font-size: .7rem;
-  padding: 3px 8px; flex-shrink: 0;
-  transition: color var(--trans), border-color var(--trans);
-}
-.term-bar .clear-btn:hover { color: var(--amber); border-color: var(--amber); }
+/* FILE LIST */
+.filelist{margin-top:6px;display:flex;flex-direction:column}
+.filerow{display:grid;grid-template-columns:116px 180px 1fr;gap:14px;padding:12px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.filerow:last-child{border-bottom:none}
+.filerow .perm{color:var(--dim);font-size:.74rem}.filerow .fname{color:var(--violet)}.filerow .fdesc{color:var(--text);font-size:.85rem;line-height:1.6}
+@media(max-width:700px){.filerow{grid-template-columns:1fr;gap:4px;padding:14px 0}.filerow .perm{order:3;font-size:.7rem}}
 
-.term-body {
-  padding: 14px 16px; min-height: 220px; max-height: 420px;
-  overflow-y: auto; font-size: .82rem;
-}
-.term-body::-webkit-scrollbar { width: 8px; }
-.term-body::-webkit-scrollbar-track { background: transparent; }
-.term-body::-webkit-scrollbar-thumb {
-  background: var(--line-bright); border-radius: 4px;
-}
-.term-log { margin-bottom: 8px; }
-.term-log:last-child { margin-bottom: 0; }
-.ps1-row {
-  display: flex; gap: 8px; flex-wrap: wrap; align-items: baseline;
-}
+/* DIFF */
+.diff{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:6px;font-size:.84rem}
+.diff-row{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--line)}
+.diff-row:last-child{border-bottom:none}
+.diff-cell{padding:12px 16px;line-height:1.6}
+.diff-cell.minus{background:rgba(255,107,107,.06);color:#cfa9a9;border-right:1px solid var(--line)}
+.diff-cell.plus{background:rgba(126,224,168,.06);color:#b9d9c6}
+.diff-cell .sym{display:inline-block;width:18px;color:var(--dim)}
+.diff-cell.minus .sym{color:var(--red)}.diff-cell.plus .sym{color:var(--green)}
+@media(max-width:680px){.diff-row{grid-template-columns:1fr}.diff-cell.minus{border-right:none;border-bottom:1px solid var(--line)}}
 
-.term-input-row {
-  display: flex; align-items: center; gap: 8px;
-  padding: 11px 16px; border-top: 1px solid var(--line);
-  background: var(--bg-input);
-}
-#termInput {
-  flex: 1; min-width: 0; background: transparent;
-  border: none; outline: none; color: var(--bright);
-  font-size: .82rem; caret-color: var(--amber);
-}
-.term-input-row .send-btn {
-  background: none; border: 1px solid var(--line-bright);
-  border-radius: 4px; color: var(--dim);
-  font-size: .74rem; padding: 5px 10px; flex-shrink: 0;
-  transition: color var(--trans), border-color var(--trans);
-}
-.term-input-row .send-btn:hover { color: var(--amber); border-color: var(--amber); }
-@media (max-width: 540px) { .term-input-row .send-btn { display: none; } }
+/* TABLE ROWS */
+.tbl{margin-top:6px;display:flex;flex-direction:column}
+.tbl-row{display:grid;grid-template-columns:108px 1fr;gap:18px;padding:14px 0;border-bottom:1px solid var(--line)}
+.tbl-row:last-child{border-bottom:none}
+.tbl-row .key{color:var(--amber);font-weight:600;font-size:.88rem}.tbl-row.l5 .key{color:var(--violet)}
+.tbl-row .desc{color:var(--text);font-size:.85rem;line-height:1.7}
+.tbl-row .desc .lbl{color:var(--bright);font-weight:600;display:block;margin-bottom:3px}
+@media(max-width:560px){.tbl-row{grid-template-columns:1fr;gap:4px}.tbl-row .key{font-size:.8rem}}
 
-.term-hint {
-  padding: 9px 16px; font-size: .72rem;
-  color: var(--dim); border-top: 1px solid var(--line);
-  background: #120e0b; line-height: 1.8;
-}
-.term-hint code {
-  color: var(--violet); background: var(--violet-soft);
-  padding: 1px 5px; border-radius: 3px; white-space: nowrap;
-}
+/* LOG ROWS */
+.log-row{display:grid;grid-template-columns:110px 1fr;gap:16px;padding:14px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.log-row:last-child{border-bottom:none}
+.log-row .status{font-size:.74rem;flex-shrink:0}
+.log-row .status.done{color:var(--green)}.log-row .status.now{color:var(--amber)}.log-row .status.soon{color:var(--dim)}
+.log-row .body .lbl{color:var(--bright);font-weight:600;display:block;margin-bottom:5px;font-size:.92rem}
+.log-row .body p{color:var(--text);line-height:1.7;font-size:.85rem}
+@media(max-width:560px){.log-row{grid-template-columns:1fr;gap:6px}}
 
-/* ===================================================================
-   FILE LISTING (ls style)
-   =================================================================== */
-.filelist { margin-top: 6px; display: flex; flex-direction: column; }
-.filerow {
-  display: grid;
-  grid-template-columns: 116px 180px 1fr;
-  gap: 14px; padding: 12px 0;
-  border-bottom: 1px solid var(--line); align-items: baseline;
-}
-.filerow:last-child { border-bottom: none; }
-.filerow .perm  { color: var(--dim); font-size: .74rem; }
-.filerow .fname { color: var(--violet); }
-.filerow .fdesc { color: var(--text); font-size: .85rem; line-height: 1.6; }
-@media (max-width: 700px) {
-  .filerow { grid-template-columns: 1fr; gap: 4px; padding: 14px 0; }
-  .filerow .perm { order: 3; font-size: .7rem; }
-}
+/* JSON VIEWER */
+.jsonview{border:1px solid var(--line);border-radius:var(--r);background:var(--bg-panel);overflow:hidden;margin-top:6px}
+.jsonview .jhead{display:flex;justify-content:space-between;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line);font-size:.74rem;color:var(--dim);flex-wrap:wrap}
+.jsonview .jbody{padding:16px;font-size:.82rem;overflow-x:auto;color:var(--text);line-height:1.8}
+.jsonview .k{color:var(--violet)}.jsonview .s{color:var(--amber)}.jsonview .n{color:var(--green)}
 
-/* ===================================================================
-   DIFF COMPARISON
-   =================================================================== */
-.diff {
-  border: 1px solid var(--line); border-radius: var(--radius);
-  overflow: hidden; margin-top: 6px; font-size: .84rem;
-}
-.diff-row {
-  display: grid; grid-template-columns: 1fr 1fr;
-  border-bottom: 1px solid var(--line);
-}
-.diff-row:last-child { border-bottom: none; }
-.diff-cell { padding: 12px 16px; line-height: 1.6; }
-.diff-cell.minus {
-  background: rgba(255,107,107,.06);
-  color: #cfa9a9; border-right: 1px solid var(--line);
-}
-.diff-cell.plus { background: rgba(126,224,168,.06); color: #b9d9c6; }
-.diff-cell .sym { display: inline-block; width: 18px; color: var(--dim); }
-.diff-cell.minus .sym { color: var(--red); }
-.diff-cell.plus .sym { color: var(--green); }
-@media (max-width: 680px) {
-  .diff-row { grid-template-columns: 1fr; }
-  .diff-cell.minus { border-right: none; border-bottom: 1px solid var(--line); }
-}
+/* HOW IT WORKS */
+.steps{display:flex;flex-direction:column;gap:0;margin-top:8px}
+.step{display:grid;grid-template-columns:56px 1fr;gap:20px;padding:20px 0;border-bottom:1px solid var(--line);align-items:start}
+.step:last-child{border-bottom:none}
+.step-num{width:44px;height:44px;border-radius:6px;border:1px solid var(--line-bright);background:var(--bg-panel);display:flex;align-items:center;justify-content:center;color:var(--amber);font-weight:700;font-size:.88rem;flex-shrink:0}
+.step-body .step-title{color:var(--bright);font-weight:600;font-size:.95rem;margin-bottom:6px}
+.step-body .step-desc{color:var(--text);font-size:.85rem;line-height:1.7}
+.step-body .step-code{margin-top:10px;background:var(--bg-input);border:1px solid var(--line);border-radius:5px;padding:10px 14px;font-size:.78rem;color:var(--dim);overflow-x:auto}
+.step-body .step-code .c-key{color:var(--violet)}.step-body .step-code .c-str{color:var(--amber)}.step-body .step-code .c-ok{color:var(--green)}
+@media(max-width:560px){.step{grid-template-columns:1fr;gap:10px}}
 
-/* ===================================================================
-   TABLE ROWS
-   =================================================================== */
-.tbl { margin-top: 6px; display: flex; flex-direction: column; }
-.tbl-row {
-  display: grid; grid-template-columns: 104px 1fr;
-  gap: 18px; padding: 14px 0;
-  border-bottom: 1px solid var(--line);
-}
-.tbl-row:last-child { border-bottom: none; }
-.tbl-row .key { color: var(--amber); font-weight: 600; font-size: .88rem; }
-.tbl-row.l5 .key { color: var(--violet); }
-.tbl-row .desc { color: var(--text); font-size: .85rem; line-height: 1.7; }
-.tbl-row .desc .lbl {
-  color: var(--bright); font-weight: 600;
-  display: block; margin-bottom: 3px;
-}
-@media (max-width: 560px) {
-  .tbl-row { grid-template-columns: 1fr; gap: 4px; }
-  .tbl-row .key { font-size: .8rem; }
-}
+/* USE CASES */
+.usecase-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:8px}
+.uc-card{background:var(--bg-panel);padding:22px 20px;transition:background var(--tr)}
+.uc-card:hover{background:var(--amber-glow)}
+.uc-role{color:var(--amber);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;font-weight:700}
+.uc-title{color:var(--bright);font-weight:600;font-size:.92rem;margin-bottom:8px}
+.uc-desc{color:var(--text);font-size:.82rem;line-height:1.7}
+.uc-example{margin-top:12px;font-size:.76rem;color:var(--dim);padding:8px 12px;background:var(--bg-input);border-left:2px solid var(--line-bright);border-radius:0 4px 4px 0;line-height:1.6}
+.uc-example .c{color:var(--violet)}
+@media(max-width:640px){.usecase-grid{grid-template-columns:1fr}}
 
-/* ===================================================================
-   LOG ROWS (roadmap)
-   =================================================================== */
-.log-row {
-  display: grid; grid-template-columns: 108px 1fr;
-  gap: 16px; padding: 14px 0;
-  border-bottom: 1px solid var(--line); align-items: baseline;
-}
-.log-row:last-child { border-bottom: none; }
-.log-row .status { font-size: .74rem; flex-shrink: 0; }
-.log-row .status.done { color: var(--green); }
-.log-row .status.now  { color: var(--amber); }
-.log-row .status.soon { color: var(--dim); }
-.log-row .body .lbl {
-  color: var(--bright); font-weight: 600;
-  display: block; margin-bottom: 5px; font-size: .92rem;
-}
-.log-row .body p { color: var(--text); line-height: 1.7; font-size: .85rem; }
-@media (max-width: 560px) { .log-row { grid-template-columns: 1fr; gap: 6px; } }
+/* COMPARISON */
+.compare-table{width:100%;border-collapse:collapse;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:8px;font-size:.82rem}
+.compare-table th,.compare-table td{padding:11px 14px;border-bottom:1px solid var(--line);text-align:left}
+.compare-table tr:last-child td{border-bottom:none}
+.compare-table thead th{background:#120e0b;color:var(--dim);font-weight:500;font-size:.74rem;text-transform:uppercase;letter-spacing:.06em}
+.compare-table thead th:first-child{color:var(--text);font-size:.8rem;text-transform:none;letter-spacing:0}
+.compare-table tbody tr{background:var(--bg-panel);transition:background var(--tr)}
+.compare-table tbody tr:hover{background:var(--amber-glow)}
+.compare-table .feat{color:var(--text);font-size:.82rem}
+.compare-table .check-y{color:var(--green)}.compare-table .check-p{color:var(--amber)}.compare-table .check-n{color:var(--dim)}
+.compare-table .orlix-col{color:var(--amber);font-weight:600}
+@media(max-width:680px){.compare-table thead th:nth-child(n+3),.compare-table td:nth-child(n+3){display:none}}
 
-/* ===================================================================
-   JSON VIEWER
-   =================================================================== */
-.jsonview {
-  border: 1px solid var(--line); border-radius: var(--radius);
-  background: var(--bg-panel); overflow: hidden; margin-top: 6px;
-}
-.jsonview .jhead {
-  display: flex; justify-content: space-between; gap: 12px;
-  padding: 10px 16px; border-bottom: 1px solid var(--line);
-  font-size: .74rem; color: var(--dim); flex-wrap: wrap;
-}
-.jsonview .jbody {
-  padding: 16px; font-size: .82rem;
-  overflow-x: auto; color: var(--text); line-height: 1.8;
-}
-.jsonview .k { color: var(--violet); }
-.jsonview .s { color: var(--amber); }
-.jsonview .n { color: var(--green); }
+/* INTEGRATIONS */
+.int-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:8px}
+.int-card{background:var(--bg-panel);padding:16px;transition:background var(--tr)}
+.int-card:hover{background:var(--amber-glow)}
+.int-cat{color:var(--dim);font-size:.7rem;margin-bottom:7px;text-transform:uppercase;letter-spacing:.08em}
+.int-name{color:var(--bright);font-weight:600;font-size:.88rem}
+.int-status{margin-top:6px;font-size:.72rem;display:flex;align-items:center;gap:5px}
+.int-status.live{color:var(--green)}.int-status.soon{color:var(--amber)}.int-status.beta{color:var(--violet)}
+.int-status .dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+@media(max-width:580px){.int-grid{grid-template-columns:repeat(2,1fr)}}
 
-/* ===================================================================
-   INTEGRATIONS GRID
-   =================================================================== */
-.integration-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1px; background: var(--line);
-  border: 1px solid var(--line); border-radius: var(--radius);
-  overflow: hidden; margin-top: 8px;
-}
-.int-card {
-  background: var(--bg-panel); padding: 16px;
-  transition: background var(--trans);
-}
-.int-card:hover { background: var(--amber-glow); }
-.int-card .int-cat {
-  color: var(--dim); font-size: .7rem; margin-bottom: 8px;
-  text-transform: uppercase; letter-spacing: .08em;
-}
-.int-card .int-name { color: var(--bright); font-weight: 600; font-size: .88rem; }
-.int-card .int-status {
-  margin-top: 6px; font-size: .72rem;
-  display: flex; align-items: center; gap: 5px;
-}
-.int-card .int-status.live { color: var(--green); }
-.int-card .int-status.soon { color: var(--amber); }
-.int-card .int-status .dot {
-  width: 5px; height: 5px; border-radius: 50%; background: currentColor;
-}
-@media (max-width: 600px) {
-  .integration-grid { grid-template-columns: repeat(2, 1fr); }
-}
+/* PRICING */
+.pricing-toggle{display:flex;align-items:center;gap:12px;margin-bottom:20px;font-size:.82rem;color:var(--dim)}
+.toggle-btn{background:var(--bg-panel);border:1px solid var(--line-bright);border-radius:20px;padding:3px;display:flex;gap:2px;cursor:pointer}
+.toggle-opt{padding:4px 12px;border-radius:16px;font-size:.76rem;color:var(--dim);transition:background var(--tr),color var(--tr);cursor:pointer;border:none;background:none;font-family:var(--mono)}
+.toggle-opt.active{background:var(--amber);color:#1a0f06;font-weight:600}
+.save-badge{color:var(--green);font-size:.72rem}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.plan-card{background:var(--bg-panel);padding:24px 20px;display:flex;flex-direction:column;position:relative}
+.plan-card.featured{background:var(--bg-card);outline:1px solid var(--amber);outline-offset:-1px}
+.plan-badge{position:absolute;top:12px;right:12px;background:var(--amber);color:#1a0f06;font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.05em}
+.plan-name{color:var(--amber);font-weight:700;font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.plan-price{color:var(--bright);font-weight:700;font-size:1.6rem;line-height:1.1;margin-bottom:4px}
+.plan-price sub{font-size:.75rem;font-weight:400;color:var(--dim);vertical-align:baseline}
+.plan-orig{color:var(--dim);font-size:.75rem;text-decoration:line-through;margin-bottom:2px;min-height:1.1em}
+.plan-tagline{color:var(--dim);font-size:.76rem;margin-bottom:20px}
+.plan-features{list-style:none;display:flex;flex-direction:column;gap:8px;flex:1}
+.plan-features li{font-size:.8rem;color:var(--text);display:flex;gap:8px;align-items:baseline}
+.plan-features li::before{content:"✓";color:var(--green);flex-shrink:0;font-size:.72rem}
+.plan-features li.off::before{content:"·";color:var(--dim)}.plan-features li.off{color:var(--dim)}
+.plan-cta{margin-top:20px;width:100%;padding:10px;border:1px solid var(--line-bright);border-radius:5px;font-size:.78rem;background:transparent;color:var(--text);cursor:pointer;transition:border-color var(--tr),color var(--tr),background var(--tr)}
+.plan-cta:hover{border-color:var(--amber);color:var(--amber)}
+.plan-card.featured .plan-cta{border-color:var(--amber);color:var(--amber)}
+.plan-card.featured .plan-cta:hover{background:var(--amber-soft);color:var(--bright)}
+@media(max-width:700px){.pricing-grid{grid-template-columns:1fr}}
 
-/* ===================================================================
-   PRICING
-   =================================================================== */
-.pricing-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 1px; background: var(--line);
-  border: 1px solid var(--line); border-radius: var(--radius);
-  overflow: hidden; margin-top: 8px;
-}
-.plan-card {
-  background: var(--bg-panel); padding: 24px 20px;
-  display: flex; flex-direction: column; gap: 0;
-  position: relative;
-}
-.plan-card.featured {
-  background: var(--bg-card);
-  outline: 1px solid var(--amber);
-  outline-offset: -1px;
-}
-.plan-badge {
-  position: absolute; top: 12px; right: 12px;
-  background: var(--amber); color: #1a0f06;
-  font-size: .62rem; font-weight: 700;
-  padding: 2px 7px; border-radius: 3px;
-  text-transform: uppercase; letter-spacing: .05em;
-}
-.plan-name {
-  color: var(--amber); font-weight: 700;
-  font-size: .82rem; text-transform: uppercase;
-  letter-spacing: .08em; margin-bottom: 8px;
-}
-.plan-price {
-  color: var(--bright); font-weight: 700;
-  font-size: 1.5rem; line-height: 1.1; margin-bottom: 4px;
-}
-.plan-price sub {
-  font-size: .8rem; font-weight: 400;
-  color: var(--dim); vertical-align: baseline;
-}
-.plan-tagline {
-  color: var(--dim); font-size: .76rem; margin-bottom: 20px;
-}
-.plan-features {
-  list-style: none; display: flex;
-  flex-direction: column; gap: 8px;
-  flex: 1;
-}
-.plan-features li {
-  font-size: .8rem; color: var(--text);
-  display: flex; gap: 8px; align-items: baseline;
-}
-.plan-features li::before {
-  content: "✓"; color: var(--green);
-  flex-shrink: 0; font-size: .72rem;
-}
-.plan-features li.dim::before { content: "·"; color: var(--dim); }
-.plan-features li.dim { color: var(--dim); }
-.plan-cta {
-  margin-top: 20px;
-  width: 100%; padding: 10px;
-  border: 1px solid var(--line-bright);
-  border-radius: 5px; font-size: .78rem;
-  background: transparent; color: var(--text);
-  cursor: pointer;
-  transition: border-color var(--trans), color var(--trans), background var(--trans);
-}
-.plan-cta:hover { border-color: var(--amber); color: var(--amber); }
-.plan-card.featured .plan-cta {
-  border-color: var(--amber); color: var(--amber);
-}
-.plan-card.featured .plan-cta:hover { background: var(--amber-soft); color: var(--bright); }
-@media (max-width: 700px) {
-  .pricing-grid { grid-template-columns: 1fr; }
-  .plan-card.featured { outline: 1px solid var(--amber); }
-}
+/* FAQ */
+.faq-list{margin-top:6px}
+.faq-item{border-bottom:1px solid var(--line)}
+.faq-item:last-child{border-bottom:none}
+.faq-q{display:flex;justify-content:space-between;align-items:center;padding:16px 0;cursor:pointer;gap:16px;background:none;border:none;width:100%;text-align:left;color:var(--bright);font-size:.88rem;font-weight:600;font-family:var(--mono)}
+.faq-q:hover{color:var(--amber)}
+.faq-icon{color:var(--amber);font-size:.9rem;flex-shrink:0;transition:transform .2s}
+.faq-item.open .faq-icon{transform:rotate(45deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.faq-item.open .faq-a{max-height:300px}
+.faq-a-inner{padding:0 0 16px;color:var(--text);font-size:.84rem;line-height:1.8}
+.faq-a-inner .hl{color:var(--violet)}.faq-a-inner .ok{color:var(--green)}
 
-/* ===================================================================
-   ACCESS FORM
-   =================================================================== */
-.field-row { margin-bottom: 14px; display: flex; flex-direction: column; gap: 6px; }
-.field-row .lbl { color: var(--violet); font-size: .8rem; }
-.field-row input, .field-row select {
-  background: var(--bg); border: 1px solid var(--line-bright);
-  border-radius: 4px; color: var(--bright);
-  font-size: .85rem; padding: 10px 12px;
-  width: 100%; max-width: 380px;
-  transition: border-color var(--trans);
-}
-.field-row input:focus, .field-row select:focus {
-  outline: none; border-color: var(--amber);
-}
-.field-row input::placeholder { color: var(--dim-2); }
+/* TESTIMONIALS */
+.testi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:8px}
+.testi-card{background:var(--bg-panel);padding:22px 20px;transition:background var(--tr)}
+.testi-card:hover{background:var(--amber-glow)}
+.testi-body{font-size:.84rem;color:var(--text);line-height:1.75;margin-bottom:16px}
+.testi-body blockquote::before{content:'"';color:var(--amber)}
+.testi-body blockquote::after{content:'"';color:var(--amber)}
+.testi-meta{display:flex;flex-direction:column;gap:3px}
+.testi-name{color:var(--bright);font-weight:600;font-size:.82rem}
+.testi-role{color:var(--dim);font-size:.76rem}
+.testi-plan{display:inline-block;margin-top:4px;font-size:.7rem;color:var(--amber);border:1px solid var(--line-bright);border-radius:3px;padding:1px 6px}
+@media(max-width:640px){.testi-grid{grid-template-columns:1fr}}
 
-/* ===================================================================
-   FOOTER
-   =================================================================== */
-footer { padding: 36px 0 64px; font-size: .78rem; color: var(--dim); }
-.foot-grid {
-  display: flex; justify-content: space-between;
-  flex-wrap: wrap; gap: 16px;
-}
-.foot-links { display: flex; gap: 16px; flex-wrap: wrap; }
-.foot-links a {
-  border-bottom: none; color: var(--dim); font-size: .76rem;
-}
-.foot-links a:hover { color: var(--amber); }
-.foot-echo { margin-bottom: 20px; font-size: .82rem; line-height: 1.8; }
-.foot-copy { color: var(--dim-2); font-size: .74rem; }
+/* SECURITY */
+.sec-features{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:8px}
+.sec-feat{background:var(--bg-panel);padding:18px 16px;transition:background var(--tr)}
+.sec-feat:hover{background:var(--green-soft)}
+.sec-feat .sf-icon{color:var(--green);font-size:.9rem;margin-bottom:8px}
+.sec-feat .sf-title{color:var(--bright);font-weight:600;font-size:.85rem;margin-bottom:5px}
+.sec-feat .sf-desc{color:var(--text);font-size:.8rem;line-height:1.65}
+@media(max-width:580px){.sec-features{grid-template-columns:1fr}}
 
-/* ===================================================================
-   BACK TO TOP
-   =================================================================== */
-#backTop {
-  position: fixed; bottom: 22px; right: 22px; z-index: 80;
-  width: 44px; height: 44px; border-radius: 8px;
-  border: 1px solid var(--line-bright);
-  background: var(--bg-panel); color: var(--amber);
-  font-size: 1rem; display: flex; align-items: center; justify-content: center;
-  opacity: 0; pointer-events: none;
-  transition: opacity .25s, transform .25s, border-color var(--trans);
-  box-shadow: 0 6px 24px -8px rgba(0,0,0,.7);
-}
-#backTop.show { opacity: 1; pointer-events: auto; }
-#backTop:hover { border-color: var(--amber); transform: translateY(-2px); }
+/* COMMUNITY */
+.community-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:8px}
+.com-card{background:var(--bg-panel);padding:22px 18px;transition:background var(--tr)}
+.com-card:hover{background:var(--violet-soft)}
+.com-icon{font-size:1.1rem;margin-bottom:10px}
+.com-title{color:var(--bright);font-weight:600;font-size:.9rem;margin-bottom:6px}
+.com-desc{color:var(--text);font-size:.8rem;line-height:1.65}
+.com-link{display:inline-block;margin-top:12px;font-size:.78rem;color:var(--violet);border-bottom:1px dotted rgba(185,164,255,.4)}
+.com-link:hover{color:var(--bright)}
+@media(max-width:580px){.community-grid{grid-template-columns:1fr}}
 
-/* ===================================================================
-   RESPONSIVE
-   =================================================================== */
-@media (max-width: 480px) {
-  body { font-size: 13px; }
-  .hero { padding: 48px 0 36px; }
-  section { padding: 40px 0; }
-}
+/* ACCESS FORM */
+.field-row{margin-bottom:14px;display:flex;flex-direction:column;gap:6px}
+.field-row .lbl{color:var(--violet);font-size:.8rem}
+.field-row input,.field-row select{background:var(--bg);border:1px solid var(--line-bright);border-radius:4px;color:var(--bright);font-size:.85rem;padding:10px 12px;width:100%;max-width:400px;transition:border-color var(--tr)}
+.field-row input:focus,.field-row select:focus{outline:none;border-color:var(--amber)}
+.field-row input::placeholder{color:var(--dim-2)}
+
+/* FOOTER */
+footer{padding:38px 0 68px;font-size:.78rem;color:var(--dim)}
+.foot-grid{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.foot-links{display:flex;gap:14px;flex-wrap:wrap}
+.foot-links a{border-bottom:none;color:var(--dim);font-size:.76rem}
+.foot-links a:hover{color:var(--amber)}
+.foot-echo{margin-bottom:20px;font-size:.82rem;line-height:1.8}
+.foot-copy{color:var(--dim-2);font-size:.74rem}
+
+/* BACK TO TOP */
+#backTop{position:fixed;bottom:22px;right:22px;z-index:80;width:44px;height:44px;border-radius:8px;border:1px solid var(--line-bright);background:var(--bg-panel);color:var(--amber);font-size:1rem;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s,border-color var(--tr);box-shadow:0 6px 24px -8px rgba(0,0,0,.7)}
+#backTop.show{opacity:1;pointer-events:auto}
+#backTop:hover{border-color:var(--amber);transform:translateY(-2px)}
+
+@media(max-width:480px){body{font-size:13px}.hero{padding:48px 0 36px}section{padding:40px 0}}
 </style>
 </head>
 <body>
@@ -621,24 +316,19 @@ footer { padding: 36px 0 64px; font-size: .78rem; color: var(--dim); }
 <div class="crt" aria-hidden="true"></div>
 <div class="vignette" aria-hidden="true"></div>
 
-<!-- ================================================================
-     TITLEBAR
-     ============================================================= -->
-<header class="titlebar" role="banner">
+<!-- TITLEBAR -->
+<header class="titlebar">
   <div class="wrap titlebar-in">
     <div class="tb-left">
-      <span class="tb-dots" aria-hidden="true">
-        <span class="r"></span><span class="y"></span><span class="g"></span>
-      </span>
+      <span class="tb-dots" aria-hidden="true"><span class="r"></span><span class="y"></span><span class="g"></span></span>
       <span class="tb-title">orlix — /usr/local/bin/orlix v0.5.0-beta</span>
     </div>
-    <nav class="tb-right" aria-label="Main navigation">
-      <span class="live" aria-label="System connected">
-        <span class="pip"></span>connected
-      </span>
-      <a href="#product" class="docs-link" aria-label="Documentation">docs</a>
-      <a href="https://github.com/tylerbroqs/orlixai" class="github-link" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">github</a>
-      <button id="navAccess" type="button" aria-label="Get early access">access</button>
+    <nav class="tb-right">
+      <span class="live"><span class="pip"></span>connected</span>
+      <a href="#product" class="hide-sm">docs</a>
+      <a href="#pricing" class="hide-sm">pricing</a>
+      <a href="https://github.com/tylerbroqs/orlixai" target="_blank" rel="noopener noreferrer" class="hide-sm">github</a>
+      <button id="navAccess" type="button">access</button>
     </nav>
   </div>
 </header>
@@ -646,111 +336,70 @@ footer { padding: 36px 0 64px; font-size: .78rem; color: var(--dim); }
 <main>
 <div class="wrap">
 
-  <div class="crumb" aria-label="Breadcrumb">
-    <span class="root">~</span><span class="sep">/</span><span class="here">orlix</span><span class="sep">/</span><span>welcome.sh</span>
-  </div>
+  <div class="crumb"><span class="root">~</span><span class="sep">/</span><span class="here">orlix</span><span class="sep">/</span>welcome.sh</div>
 
-  <!-- ==============================================================
-       01 · HERO / BOOT
-       ============================================================ -->
-  <section class="hero" id="top" aria-label="Introduction">
-    <div class="boot" id="bootLog" aria-live="polite" aria-atomic="false"></div>
-
+  <!-- ── HERO ── -->
+  <section class="hero" id="top">
+    <div class="boot" id="bootLog" aria-live="polite"></div>
     <h1 class="hero-title">Stop prompt-chasing.<br><span class="amber-hl">Own the control layer.</span></h1>
-    <p class="hero-sub">
-      Orlix is a governance layer for personal AI — a persistent world model that turns any assistant into a system that
-      <span class="hl">observes</span>, <span class="hl">decides</span>, <span class="hl">acts</span>, and <span class="hl">reports back</span>.
-      <span class="dim">Every action is policy-bound and fully auditable.</span>
-    </p>
-
+    <p class="hero-sub">Orlix is a governance layer for personal AI — a persistent world model that turns any assistant into a system that <span class="hl">observes</span>, <span class="hl">decides</span>, <span class="hl">acts</span>, and <span class="hl">reports back</span>. <span class="dim">Every action is policy-bound and fully auditable.</span></p>
     <div class="cmd-row">
-      <button class="cmd-btn primary" data-action="goto" data-target="access" type="button">
-        <span class="pfx">$</span> orlix init
-      </button>
-      <button class="cmd-btn" data-action="goto" data-target="product" type="button">
-        <span class="pfx">$</span> man orlix
-      </button>
-      <button class="cmd-btn" id="focusTermBtn" type="button">
-        <span class="pfx">$</span> open shell
-      </button>
+      <button class="cmd-btn primary" data-goto="access"><span class="pfx">$</span> orlix init</button>
+      <button class="cmd-btn" data-goto="product"><span class="pfx">$</span> man orlix</button>
+      <button class="cmd-btn" id="focusTermBtn"><span class="pfx">$</span> open shell</button>
     </div>
-
-    <!-- Live Terminal -->
-    <div class="terminal" role="application" aria-label="Interactive Orlix shell">
+    <div class="terminal" role="application" aria-label="Orlix interactive shell">
       <div class="term-bar">
-        <span class="dots" aria-hidden="true">
-          <span style="background:var(--red)"></span>
-          <span style="background:var(--amber)"></span>
-          <span style="background:var(--green)"></span>
-        </span>
+        <span class="dots" aria-hidden="true"><span style="background:var(--red)"></span><span style="background:var(--amber)"></span><span style="background:var(--green)"></span></span>
         <span class="lbl">orlix-shell — bash — 80×24</span>
-        <button class="clear-btn" type="button" data-action="clear-term" aria-label="Clear terminal">clear</button>
+        <button class="clear-btn" data-action="clear-term">clear</button>
       </div>
       <div class="term-body" id="termBody" role="log" aria-live="polite">
         <div class="term-log">
-          <div class="ps1-row">
-            <span class="ps1">
-              <span class="user">guest</span><span class="sym">@</span><span class="path">orlix</span><span class="sym">:~$</span>
-            </span>
-          </div>
-          <div class="out">Welcome to the Orlix shell. Type <span class="hl">help</span> to see available commands, or <span class="hl">tour</span> for a guided walkthrough.</div>
+          <div class="ps1-row"><span class="ps1"><span class="user">guest</span><span class="sym">@</span><span class="path">orlix</span><span class="sym">:~$</span></span></div>
+          <div class="out">Welcome to Orlix. Type <span class="hl">help</span> for commands, <span class="hl">tour</span> for a walkthrough.</div>
         </div>
       </div>
       <div class="term-input-row">
-        <span class="ps1" aria-hidden="true">
-          <span class="user">guest</span><span class="sym">@</span><span class="path">orlix</span><span class="sym">:~$</span>
-        </span>
-        <input id="termInput" type="text"
-          autocomplete="off" autocapitalize="off" spellcheck="false"
-          placeholder="type a command…"
-          aria-label="Terminal command input">
-        <button class="send-btn" type="button" id="termSendBtn" aria-label="Run command">run</button>
+        <span class="ps1" aria-hidden="true"><span class="user">guest</span><span class="sym">@</span><span class="path">orlix</span><span class="sym">:~$</span></span>
+        <input id="termInput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="type a command…" aria-label="Terminal input">
+        <button class="send-btn" id="termSendBtn">run</button>
       </div>
-      <div class="term-hint">
-        try:
-        <code>help</code> ·
-        <code>tour</code> ·
-        <code>status</code> ·
-        <code>levels</code> ·
-        <code>pricing</code> ·
-        <code>integrations</code> ·
-        <code>cat receipt.log</code> ·
-        <code>man orlix</code>
-      </div>
+      <div class="term-hint">try: <code>help</code> · <code>tour</code> · <code>status</code> · <code>levels</code> · <code>pricing</code> · <code>compare</code> · <code>faq</code> · <code>use-cases</code></div>
     </div>
   </section>
 
-  <!-- ==============================================================
-       02 · PROBLEM
-       ============================================================ -->
-  <section id="problem" class="fade-in">
-    <div class="crumb">
-      <span class="root">~/orlix</span><span class="sep">/</span><span class="here">problem.md</span>
+  <!-- ── STATS ── -->
+  <section id="stats" class="fade-in">
+    <div class="crumb"><span class="root">~/orlix</span><span class="sep">/</span><span class="here">stats.json</span></div>
+    <div class="sec-head">
+      <div class="file">$ orlix stats --global</div>
+      <h2><span class="num">→</span> By the numbers</h2>
     </div>
+    <div class="stats-bar">
+      <div class="stat-cell"><div class="stat-num" data-count="2400">0</div><div class="stat-lbl">early operators</div></div>
+      <div class="stat-cell"><div class="stat-num" data-count="1200000" data-fmt="1.2M">0</div><div class="stat-lbl">policies enforced</div></div>
+      <div class="stat-cell"><div class="stat-num" data-count="340000" data-fmt="340K">0</div><div class="stat-lbl">actions audited</div></div>
+      <div class="stat-cell"><div class="stat-num" data-count="14" data-suffix=" rules">0</div><div class="stat-lbl">avg active policies</div></div>
+    </div>
+  </section>
+
+  <!-- ── PROBLEM ── -->
+  <section id="problem" class="fade-in">
+    <div class="crumb"><span class="root">~/orlix</span><span class="sep">/</span><span class="here">problem.md</span></div>
     <div class="sec-head">
       <div class="file">$ cat problem.md</div>
       <h2><span class="num">01</span> The problem with AI today</h2>
     </div>
-
-    <p class="hero-sub">
-      Everyone has access to the same models. If your edge is <span class="hl">"knowing how to prompt,"</span>
-      that edge is shared by every other person using the same model.
-      <span class="dim">The loop looks like this:</span>
-    </p>
-
-    <div class="boot" style="min-height:auto;font-size:.84rem;padding:12px 0">
-      re-explain <span class="dim">→</span> generate <span class="dim">→</span>
-      copy <span class="dim">→</span> paste <span class="dim">→</span>
-      verify <span class="dim">→</span> repeat <span class="bad">∞</span>
-    </div>
-
+    <p class="hero-sub">Everyone has access to the same models. If your edge is <span class="hl">"knowing how to prompt,"</span> that edge is shared by every other person using the same model. <span class="dim">The loop looks like this:</span></p>
+    <div class="boot" style="min-height:auto;font-size:.84rem;padding:12px 0">re-explain <span class="dim">→</span> generate <span class="dim">→</span> copy <span class="dim">→</span> paste <span class="dim">→</span> verify <span class="dim">→</span> repeat <span class="bad">∞</span></div>
     <div class="diff" style="margin-top:26px">
       <div class="diff-row">
         <div class="diff-cell minus"><span class="sym">−</span>Context lives in their UI — switch vendors, lose everything</div>
         <div class="diff-cell plus"><span class="sym">+</span>Memory is portable, versioned, and stays with you</div>
       </div>
       <div class="diff-row">
-        <div class="diff-cell minus"><span class="sym">−</span>Rules reset every session, so you re-explain constantly</div>
+        <div class="diff-cell minus"><span class="sym">−</span>Rules reset every session, you re-explain constantly</div>
         <div class="diff-cell plus"><span class="sym">+</span>Policies persist — set a rule once, enforced everywhere</div>
       </div>
       <div class="diff-row">
@@ -762,75 +411,80 @@ footer { padding: 36px 0 64px; font-size: .78rem; color: var(--dim); }
         <div class="diff-cell plus"><span class="sym">+</span>Every decision ships with a reviewable receipt</div>
       </div>
       <div class="diff-row">
-        <div class="diff-cell minus"><span class="sym">−</span>Your accumulated context can't be exported or moved</div>
+        <div class="diff-cell minus"><span class="sym">−</span>Your accumulated context can't be exported</div>
         <div class="diff-cell plus"><span class="sym">+</span>Swap models anytime — your system stays intact</div>
       </div>
     </div>
     <p class="muted" style="margin-top:14px">// assistants are an interface. orlix is infrastructure.</p>
   </section>
 
-  <!-- ==============================================================
-       03 · PRODUCT / GOVERNANCE LOOP
-       ============================================================ -->
+  <!-- ── HOW IT WORKS ── -->
   <section id="product" class="fade-in">
-    <div class="crumb">
-      <span class="root">~/orlix</span><span class="sep">/</span><span class="here">product/</span>
-    </div>
+    <div class="crumb"><span class="root">~/orlix</span><span class="sep">/</span><span class="here">product/</span></div>
     <div class="sec-head">
       <div class="file">$ ls -la product/</div>
-      <h2><span class="num">02</span> The governance loop</h2>
+      <h2><span class="num">02</span> How Orlix works</h2>
     </div>
-
-    <p class="hero-sub">
-      Most AI tools optimize for the next reply. Orlix optimizes for the <span class="hl">outcome</span> —
-      running a five-step loop continuously, in the background.
-    </p>
-
-    <div class="filelist">
-      <div class="filerow">
-        <span class="perm">-rwxr-xr-x</span>
-        <span class="fname">01_observe.sh</span>
-        <span class="fdesc">Watches your calendar, goals, signals, and memory — feeds the world model in real time.</span>
+    <p class="hero-sub">Orlix runs a five-step governance loop continuously. Each step produces a structured output that feeds the next — building a compounding system over time.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-body">
+          <div class="step-title">Observe</div>
+          <div class="step-desc">Watches your calendar, inbox, goals, and connected tools in real time. Feeds a living world model — not a snapshot, a stream.</div>
+          <div class="step-code"><span class="c-key">signal</span>: calendar blocked 09:00–11:00 · <span class="c-key">goal</span>: "Ship MVP" · <span class="c-key">blockers</span>: <span class="c-ok">3 open</span></div>
+        </div>
       </div>
-      <div class="filerow">
-        <span class="perm">-rwxr-xr-x</span>
-        <span class="fname">02_decide.sh</span>
-        <span class="fdesc">Weighs priorities against your policies and checks authority before anything happens.</span>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-body">
+          <div class="step-title">Decide</div>
+          <div class="step-desc">Weighs signals against your policies. Checks authority before any action — no surprises, no silent escalation.</div>
+          <div class="step-code"><span class="c-key">policy</span>: alert_if_blocker_gt_48h → <span class="c-ok">triggered</span> · authority: <span class="c-str">supervised</span></div>
+        </div>
       </div>
-      <div class="filerow">
-        <span class="perm">-rwxr-xr-x</span>
-        <span class="fname">03_act.sh</span>
-        <span class="fdesc">Executes the task directly, or requests approval first — depending on the tier you set.</span>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-body">
+          <div class="step-title">Act</div>
+          <div class="step-desc">Executes the task directly — or requests your approval first, depending on the authority tier you've configured.</div>
+          <div class="step-code"><span class="c-key">action</span>: "Priority alert sent to user" → <span class="c-ok">✓ delivered</span> · receipt: <span class="c-str">#0847</span></div>
+        </div>
       </div>
-      <div class="filerow">
-        <span class="perm">-rwxr-xr-x</span>
-        <span class="fname">04_verify.sh</span>
-        <span class="fdesc">Checks results against the original goal — not just whether something was "sent".</span>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-body">
+          <div class="step-title">Verify</div>
+          <div class="step-desc">Checks that the result actually achieved the goal — not just whether something was "sent" or "completed".</div>
+          <div class="step-code"><span class="c-key">goal</span>: "Unblock MVP" · <span class="c-key">outcome</span>: user re-prioritised → <span class="c-ok">verified ✓</span></div>
+        </div>
       </div>
-      <div class="filerow">
-        <span class="perm">-rwxr-xr-x</span>
-        <span class="fname">05_learn.sh</span>
-        <span class="fdesc">Updates policy from real outcomes. Every change is versioned and reviewable.</span>
+      <div class="step">
+        <div class="step-num">05</div>
+        <div class="step-body">
+          <div class="step-title">Learn</div>
+          <div class="step-desc">Updates policy from real outcomes. Every approval, edit, and override becomes a signal. Policy changes are versioned — always reviewable.</div>
+          <div class="step-code"><span class="c-key">policy</span> v14 → v15: alert threshold 3d → 2d · <span class="c-key">reason</span>: <span class="c-str">"user confirmed faster cadence"</span></div>
+        </div>
       </div>
     </div>
-    <p class="muted" style="margin-top:14px">// key difference: agents do tasks. orlix governs outcomes.</p>
 
     <div class="sec-head" style="margin-top:44px">
       <div class="file">$ cat receipt.log | tail -n 1</div>
       <h2 style="font-size:.95rem"><span class="num">→</span> Every action is logged</h2>
     </div>
     <div class="jsonview">
-      <div class="jhead">
-        <span>receipt #2026-06-13-0847</span>
-        <span class="ok">status: verified ✓</span>
-      </div>
+      <div class="jhead"><span>receipt #2026-06-13-0847</span><span class="ok">status: verified ✓</span></div>
       <div class="jbody">
-        <div><span class="k">intent</span>:&nbsp;&nbsp;&nbsp;"Notify user of goal drift"</div>
-        <div><span class="k">context</span>:&nbsp;&nbsp;"Goal 'Ship MVP' · 3 blockers · last touched 17d ago"</div>
-        <div><span class="k">policy</span>:&nbsp;&nbsp;&nbsp;"Alert if goal drift &gt; 3 days · v14"</div>
-        <div><span class="k">action</span>:&nbsp;&nbsp;&nbsp;"Priority alert sent" <span class="ok">✓</span></div>
-        <div><span class="k">approval</span>:&nbsp;"User confirmed re-prioritization"</div>
-        <div><span class="k">rollback</span>:&nbsp;"available · 30 days"</div>
+        <div>{</div>
+        <div>&nbsp;&nbsp;<span class="k">"intent"</span>:&nbsp;&nbsp;&nbsp;<span class="s">"Notify user of goal drift"</span>,</div>
+        <div>&nbsp;&nbsp;<span class="k">"context"</span>:&nbsp;&nbsp;<span class="s">"Goal 'Ship MVP' · 3 blockers · last touched 17d ago"</span>,</div>
+        <div>&nbsp;&nbsp;<span class="k">"policy"</span>:&nbsp;&nbsp;&nbsp;<span class="s">"Alert if goal drift &gt; 3 days · v14"</span>,</div>
+        <div>&nbsp;&nbsp;<span class="k">"action"</span>:&nbsp;&nbsp;&nbsp;<span class="s">"Priority alert sent"</span> <span class="n">// ✓</span>,</div>
+        <div>&nbsp;&nbsp;<span class="k">"approval"</span>:&nbsp;<span class="s">"User confirmed re-prioritization"</span>,</div>
+        <div>&nbsp;&nbsp;<span class="k">"outcome"</span>:&nbsp;&nbsp;<span class="s">"Goal re-prioritised · 2 blockers resolved"</span>,</div>
+        <div>&nbsp;&nbsp;<span class="k">"rollback"</span>:&nbsp;<span class="s">"available · 30 days"</span></div>
+        <div>}</div>
       </div>
     </div>
 
@@ -847,289 +501,216 @@ footer { padding: 36px 0 64px; font-size: .78rem; color: var(--dim); }
     </div>
   </section>
 
-  <!-- ==============================================================
-       04 · AUTONOMY LEVELS
-       ============================================================ -->
+  <!-- ── LEVELS ── -->
   <section id="levels" class="fade-in">
-    <div class="crumb">
-      <span class="root">~/orlix</span><span class="sep">/</span><span class="here">levels.cfg</span>
-    </div>
+    <div class="crumb"><span class="root">~/orlix</span><span class="sep">/</span><span class="here">levels.cfg</span></div>
     <div class="sec-head">
       <div class="file">$ orlix levels --describe</div>
       <h2><span class="num">03</span> Autonomy levels</h2>
     </div>
-    <p class="hero-sub">
-      A simple scale to place any AI tool — from read-only systems to a fully co-adaptive partner.
-      Orlix is designed to run at the top.
-    </p>
-
+    <p class="hero-sub">A universal scale for AI autonomy — from read-only to a fully co-adaptive partner. Orlix is built to run at L5.</p>
     <div class="tbl">
-      <div class="tbl-row">
-        <div class="key">L1</div>
-        <div class="desc"><span class="lbl">Informational</span>Read-only. Answers questions, takes no action whatsoever.</div>
-      </div>
-      <div class="tbl-row">
-        <div class="key">L2</div>
-        <div class="desc"><span class="lbl">Reactive</span>Responds within a single session, no memory beyond it.</div>
-      </div>
-      <div class="tbl-row">
-        <div class="key">L3</div>
-        <div class="desc"><span class="lbl">Mixed-initiative</span>Can suggest or warn, but a human drives every step.</div>
-      </div>
-      <div class="tbl-row">
-        <div class="key">L4</div>
-        <div class="desc"><span class="lbl">Agentic</span>Executes multi-step tasks autonomously — ends when the task does.</div>
-      </div>
-      <div class="tbl-row l5">
-        <div class="key">L5</div>
-        <div class="desc">
-          <span class="lbl">Symbiotic — Orlix</span>
-          Persistent memory, a living model of your goals, policies that evolve from outcomes,
-          full audit trail. The system doesn't end — it grows with you.
-        </div>
-      </div>
+      <div class="tbl-row"><div class="key">L1</div><div class="desc"><span class="lbl">Informational</span>Read-only. Answers questions, takes no action.</div></div>
+      <div class="tbl-row"><div class="key">L2</div><div class="desc"><span class="lbl">Reactive</span>Responds within a single session, no memory beyond it.</div></div>
+      <div class="tbl-row"><div class="key">L3</div><div class="desc"><span class="lbl">Mixed-initiative</span>Can suggest or warn, but a human drives every step.</div></div>
+      <div class="tbl-row"><div class="key">L4</div><div class="desc"><span class="lbl">Agentic</span>Executes multi-step tasks autonomously — ends when the task does.</div></div>
+      <div class="tbl-row l5"><div class="key">L5</div><div class="desc"><span class="lbl">Symbiotic — Orlix</span>Persistent memory, a living model of your goals, policies that evolve from outcomes, full audit trail. The system doesn't end — it grows with you.</div></div>
     </div>
-
     <div class="sec-head" style="margin-top:44px">
       <div class="file">$ cat principles.md</div>
       <h2 style="font-size:.95rem"><span class="num">→</span> Four core principles</h2>
     </div>
     <div class="tbl">
-      <div class="tbl-row">
-        <div class="key">#1</div>
-        <div class="desc">
-          <span class="lbl">A model of you</span>
-          Orlix maintains a living picture of your goals, preferences, and patterns —
-          updated as you change, not a static profile.
-        </div>
-      </div>
-      <div class="tbl-row">
-        <div class="key">#2</div>
-        <div class="desc">
-          <span class="lbl">Policy shaped by feedback</span>
-          Every approval, edit, or override becomes a signal. Policy changes from outcomes
-          and explicit corrections — never silent guesses.
-        </div>
-      </div>
-      <div class="tbl-row">
-        <div class="key">#3</div>
-        <div class="desc">
-          <span class="lbl">Two-way adaptation</span>
-          Orlix learns your patterns; you learn to delegate with confidence.
-          The relationship compounds over time.
-        </div>
-      </div>
-      <div class="tbl-row">
-        <div class="key">#4</div>
-        <div class="desc">
-          <span class="lbl">You set the direction</span>
-          Orlix never sets its own goals. You define what matters — Orlix gets the autonomy
-          to execute within those bounds.
-        </div>
-      </div>
+      <div class="tbl-row"><div class="key">#1</div><div class="desc"><span class="lbl">A model of you</span>Orlix maintains a living picture of your goals, preferences, and patterns — updated as you change, not a static profile.</div></div>
+      <div class="tbl-row"><div class="key">#2</div><div class="desc"><span class="lbl">Policy shaped by feedback</span>Every approval, edit, or override becomes a signal. Policy changes from outcomes — never silent guesses.</div></div>
+      <div class="tbl-row"><div class="key">#3</div><div class="desc"><span class="lbl">Two-way adaptation</span>Orlix learns your patterns; you learn to delegate with confidence. The relationship compounds over time.</div></div>
+      <div class="tbl-row"><div class="key">#4</div><div class="desc"><span class="lbl">You set the direction</span>Orlix never sets its own goals. You define what matters — Orlix gets the autonomy to execute within those bounds.</div></div>
     </div>
   </section>
 
-  <!-- ==============================================================
-       05 · MEMORY & OWNERSHIP
-       ============================================================ -->
+  <!-- ── MEMORY ── -->
   <section id="memory" class="fade-in">
-    <div class="crumb">
-      <span class="root">~/orlix</span><span class="sep">/</span><span class="here">memory/</span>
-    </div>
+    <div class="crumb"><span class="root">~/orlix</span><span class="sep">/</span><span class="here">memory/</span></div>
     <div class="sec-head">
       <div class="file">$ orlix memory --export --preview</div>
       <h2><span class="num">04</span> Memory &amp; ownership</h2>
     </div>
-    <p class="hero-sub">
-      Chat history resets whenever a vendor decides. Memory in Orlix is yours by design —
-      <span class="hl">persistent, versioned, and exportable</span> at any time.
-    </p>
-
+    <p class="hero-sub">Chat history resets whenever a vendor decides. Memory in Orlix is yours by design — <span class="hl">persistent, versioned, and exportable</span> at any time.</p>
     <div class="tbl">
-      <div class="tbl-row">
-        <div class="key">portable</div>
-        <div class="desc">Nothing is locked to a single model or vendor. Export your memory, switch providers, keep everything you've built.</div>
-      </div>
-      <div class="tbl-row">
-        <div class="key">versioned</div>
-        <div class="desc">Every fact, goal, and policy carries a timestamp and version. Roll back if something changes for the worse.</div>
-      </div>
-      <div class="tbl-row">
-        <div class="key">sourced</div>
-        <div class="desc">Every belief Orlix holds traces back to where it came from — an email, an event, a decision you made.</div>
-      </div>
-      <div class="tbl-row">
-        <div class="key">encrypted</div>
-        <div class="desc">Your memory store is encrypted at rest. Only you hold the keys — not us, not the model provider.</div>
-      </div>
+      <div class="tbl-row"><div class="key">portable</div><div class="desc">Nothing locked to a vendor. Export your memory, switch models or providers, keep everything you've built.</div></div>
+      <div class="tbl-row"><div class="key">versioned</div><div class="desc">Every fact, goal, and policy carries a timestamp and version. Roll back if something changes for the worse.</div></div>
+      <div class="tbl-row"><div class="key">sourced</div><div class="desc">Every belief Orlix holds traces back to an email, event, or decision. No hallucinated facts.</div></div>
+      <div class="tbl-row"><div class="key">encrypted</div><div class="desc">Memory store is AES-256 encrypted at rest. Only you hold the keys — not us, not the model provider.</div></div>
+      <div class="tbl-row"><div class="key">local-first</div><div class="desc">All processing can run on your machine. Cloud sync is opt-in, never required.</div></div>
     </div>
-
     <div class="jsonview" style="margin-top:24px">
-      <div class="jhead">
-        <span>orlix-export.json</span>
-        <span class="ok">readable · portable · yours</span>
-      </div>
+      <div class="jhead"><span>orlix-export.json</span><span class="ok">readable · portable · yours</span></div>
       <div class="jbody">
         <div>{</div>
-        <div>&nbsp;&nbsp;<span class="k">"schema"</span>: <span class="s">"orlix/v1"</span>,</div>
-        <div>&nbsp;&nbsp;<span class="k">"exported_at"</span>: <span class="s">"2026-06-13T08:47:00Z"</span>,</div>
+        <div>&nbsp;&nbsp;<span class="k">"schema"</span>: <span class="s">"orlix/v1"</span>, <span class="k">"exported_at"</span>: <span class="s">"2026-06-13T08:47:00Z"</span>,</div>
         <div>&nbsp;&nbsp;<span class="k">"goals"</span>: [{ <span class="k">"name"</span>: <span class="s">"Ship MVP"</span>, <span class="k">"deadline"</span>: <span class="s">"2026-07-15"</span>, <span class="k">"progress"</span>: <span class="n">0.6</span> }],</div>
         <div>&nbsp;&nbsp;<span class="k">"policies"</span>: [{ <span class="k">"rule"</span>: <span class="s">"notify_if_blocker_gt_48h"</span>, <span class="k">"version"</span>: <span class="n">14</span>, <span class="k">"status"</span>: <span class="s">"active"</span> }],</div>
         <div>&nbsp;&nbsp;<span class="k">"facts"</span>: [{ <span class="k">"content"</span>: <span class="s">"Alex owns the design review"</span>, <span class="k">"source"</span>: <span class="s">"email · 2026-06-02"</span>, <span class="k">"confidence"</span>: <span class="n">0.95</span> }]</div>
         <div>}</div>
       </div>
     </div>
+    <div class="cmd-row"><button class="cmd-btn" id="downloadExport"><span class="pfx">$</span> download export.json</button></div>
+  </section>
 
-    <div class="cmd-row">
-      <button class="cmd-btn" type="button" id="downloadExport">
-        <span class="pfx">$</span> download export.json
-      </button>
+  <!-- ── USE CASES ── -->
+  <section id="use-cases" class="fade-in">
+    <div class="crumb"><span class="root">~/orlix</span><span class="sep">/</span><span class="here">use-cases/</span></div>
+    <div class="sec-head">
+      <div class="file">$ ls use-cases/</div>
+      <h2><span class="num">05</span> Use cases</h2>
+    </div>
+    <p class="hero-sub">Orlix adapts to your role and workflow. Here's how different operators use it.</p>
+    <div class="usecase-grid">
+      <div class="uc-card">
+        <div class="uc-role">founder</div>
+        <div class="uc-title">OKR governance on autopilot</div>
+        <div class="uc-desc">Orlix tracks goal drift across every project, alerts you before deadlines slip, and maintains a live prioritisation queue — all within your policies.</div>
+        <div class="uc-example"><span class="c">policy</span>: alert if key result untouched &gt; 3 days<br><span class="c">action</span>: weekly digest + blocker escalation</div>
+      </div>
+      <div class="uc-card">
+        <div class="uc-role">engineer</div>
+        <div class="uc-title">Autonomous code review routing</div>
+        <div class="uc-desc">Orlix monitors PRs, applies your review policy (who reviews what, time limits, escalation), and notifies the right person at the right time.</div>
+        <div class="uc-example"><span class="c">signal</span>: PR open &gt; 24h, no review<br><span class="c">action</span>: ping reviewer · escalate to lead</div>
+      </div>
+      <div class="uc-card">
+        <div class="uc-role">creator</div>
+        <div class="uc-title">Content calendar governance</div>
+        <div class="uc-desc">Orlix keeps your publishing schedule on track — drafting reminders, tracking backlog, and surfacing opportunities based on your content strategy policies.</div>
+        <div class="uc-example"><span class="c">policy</span>: 2 posts/week · topic rotation<br><span class="c">action</span>: brief generator + publish reminder</div>
+      </div>
+      <div class="uc-card">
+        <div class="uc-role">operator</div>
+        <div class="uc-title">Email handled by policy</div>
+        <div class="uc-desc">Orlix reads, categorises, and acts on email within the authority tier you set — from drafting replies for approval to sending directly for routine threads.</div>
+        <div class="uc-example"><span class="c">tier</span>: supervised<br><span class="c">action</span>: draft + notify · auto-send routine threads</div>
+      </div>
     </div>
   </section>
 
-  <!-- ==============================================================
-       06 · INTEGRATIONS
-       ============================================================ -->
+  <!-- ── INTEGRATIONS ── -->
   <section id="integrations" class="fade-in">
-    <div class="crumb">
-      <span class="root">~/orlix</span><span class="sep">/</span><span class="here">integrations/</span>
-    </div>
+    <div class="crumb"><span class="root">~/orlix</span><span class="sep">/</span><span class="here">integrations/</span></div>
     <div class="sec-head">
       <div class="file">$ orlix integrations --list</div>
-      <h2><span class="num">05</span> Integrations</h2>
+      <h2><span class="num">06</span> Integrations</h2>
     </div>
-    <p class="hero-sub">
-      Orlix connects to the tools you already use — reading context from them,
-      acting through them, and verifying outcomes across them.
-    </p>
-
-    <div class="integration-grid">
-      <div class="int-card">
-        <div class="int-cat">calendar</div>
-        <div class="int-name">Google Calendar</div>
-        <div class="int-status live"><span class="dot"></span>live</div>
-      </div>
-      <div class="int-card">
-        <div class="int-cat">calendar</div>
-        <div class="int-name">Apple Calendar</div>
-        <div class="int-status live"><span class="dot"></span>live</div>
-      </div>
-      <div class="int-card">
-        <div class="int-cat">calendar</div>
-        <div class="int-name">Outlook Calendar</div>
-        <div class="int-status soon"><span class="dot"></span>coming soon</div>
-      </div>
-      <div class="int-card">
-        <div class="int-cat">email</div>
-        <div class="int-name">Gmail</div>
-        <div class="int-status live"><span class="dot"></span>live</div>
-      </div>
-      <div class="int-card">
-        <div class="int-cat">email</div>
-        <div class="int-name">Outlook Mail</div>
-        <div class="int-status soon"><span class="dot"></span>coming soon</div>
-      </div>
-      <div class="int-card">
-        <div class="int-cat">tasks</div>
-        <div class="int-name">Notion</div>
-        <div class="int-status live"><span class="dot"></span>live</div>
-      </div>
-      <div class="int-card">
-        <div class="int-cat">tasks</div>
-        <div class="int-name">Linear</div>
-        <div class="int-status live"><span class="dot"></span>live</div>
-      </div>
-      <div class="int-card">
-        <div class="int-cat">tasks</div>
-        <div class="int-name">Todoist</div>
-        <div class="int-status soon"><span class="dot"></span>coming soon</div>
-      </div>
-      <div class="int-card">
-        <div class="int-cat">comms</div>
-        <div class="int-name">Slack</div>
-        <div class="int-status live"><span class="dot"></span>live</div>
-      </div>
-      <div class="int-card">
-        <div class="int-cat">code</div>
-        <div class="int-name">GitHub</div>
-        <div class="int-status live"><span class="dot"></span>live</div>
-      </div>
-      <div class="int-card">
-        <div class="int-cat">files</div>
-        <div class="int-name">Google Drive</div>
-        <div class="int-status live"><span class="dot"></span>live</div>
-      </div>
-      <div class="int-card">
-        <div class="int-cat">files</div>
-        <div class="int-name">Dropbox</div>
-        <div class="int-status soon"><span class="dot"></span>coming soon</div>
-      </div>
+    <p class="hero-sub">Orlix connects to the tools you already use — reading context from them, acting through them, and verifying outcomes across them.</p>
+    <div class="int-grid">
+      <div class="int-card"><div class="int-cat">calendar</div><div class="int-name">Google Calendar</div><div class="int-status live"><span class="dot"></span>live</div></div>
+      <div class="int-card"><div class="int-cat">calendar</div><div class="int-name">Apple Calendar</div><div class="int-status live"><span class="dot"></span>live</div></div>
+      <div class="int-card"><div class="int-cat">calendar</div><div class="int-name">Outlook Calendar</div><div class="int-status soon"><span class="dot"></span>coming soon</div></div>
+      <div class="int-card"><div class="int-cat">email</div><div class="int-name">Gmail</div><div class="int-status live"><span class="dot"></span>live</div></div>
+      <div class="int-card"><div class="int-cat">email</div><div class="int-name">Outlook Mail</div><div class="int-status soon"><span class="dot"></span>coming soon</div></div>
+      <div class="int-card"><div class="int-cat">tasks</div><div class="int-name">Notion</div><div class="int-status live"><span class="dot"></span>live</div></div>
+      <div class="int-card"><div class="int-cat">tasks</div><div class="int-name">Linear</div><div class="int-status live"><span class="dot"></span>live</div></div>
+      <div class="int-card"><div class="int-cat">tasks</div><div class="int-name">Todoist</div><div class="int-status soon"><span class="dot"></span>coming soon</div></div>
+      <div class="int-card"><div class="int-cat">comms</div><div class="int-name">Slack</div><div class="int-status live"><span class="dot"></span>live</div></div>
+      <div class="int-card"><div class="int-cat">comms</div><div class="int-name">Discord</div><div class="int-status beta"><span class="dot"></span>beta</div></div>
+      <div class="int-card"><div class="int-cat">code</div><div class="int-name">GitHub</div><div class="int-status live"><span class="dot"></span>live</div></div>
+      <div class="int-card"><div class="int-cat">code</div><div class="int-name">GitLab</div><div class="int-status soon"><span class="dot"></span>coming soon</div></div>
+      <div class="int-card"><div class="int-cat">files</div><div class="int-name">Google Drive</div><div class="int-status live"><span class="dot"></span>live</div></div>
+      <div class="int-card"><div class="int-cat">files</div><div class="int-name">Dropbox</div><div class="int-status soon"><span class="dot"></span>coming soon</div></div>
+      <div class="int-card"><div class="int-cat">notes</div><div class="int-name">Obsidian</div><div class="int-status beta"><span class="dot"></span>beta</div></div>
+      <div class="int-card"><div class="int-cat">api</div><div class="int-name">Custom (REST)</div><div class="int-status live"><span class="dot"></span>open API</div></div>
     </div>
-    <p class="muted" style="margin-top:14px">// build your own via the open integration API — see docs.</p>
+    <p class="muted" style="margin-top:14px">// build your own via the open integration API — see docs for the connector spec.</p>
   </section>
 
-  <!-- ==============================================================
-       07 · PRICING
-       ============================================================ -->
-  <section id="pricing" class="fade-in">
-    <div class="crumb">
-      <span class="root">~/orlix</span><span class="sep">/</span><span class="here">pricing.json</span>
+  <!-- ── COMPARISON ── -->
+  <section id="compare" class="fade-in">
+    <div class="crumb"><span class="root">~/orlix</span><span class="sep">/</span><span class="here">compare.md</span></div>
+    <div class="sec-head">
+      <div class="file">$ orlix compare --vs-alternatives</div>
+      <h2><span class="num">07</span> How Orlix compares</h2>
     </div>
+    <p class="hero-sub">Assistants, agents, and productivity tools occupy different points on the autonomy spectrum. Orlix is the only L5 governance layer.</p>
+    <table class="compare-table" aria-label="Feature comparison">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Orlix</th>
+          <th>ChatGPT / Claude</th>
+          <th>AutoGPT / Agents</th>
+          <th>Notion AI</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="feat">Persistent cross-session memory</td><td class="check-y orlix-col">✓ full</td><td class="check-p">partial</td><td class="check-p">partial</td><td class="check-n">✗</td></tr>
+        <tr><td class="feat">Policy engine</td><td class="check-y orlix-col">✓</td><td class="check-n">✗</td><td class="check-n">✗</td><td class="check-n">✗</td></tr>
+        <tr><td class="feat">Full audit trail</td><td class="check-y orlix-col">✓</td><td class="check-n">✗</td><td class="check-p">partial</td><td class="check-n">✗</td></tr>
+        <tr><td class="feat">Rollback any action</td><td class="check-y orlix-col">✓ 30 days</td><td class="check-n">✗</td><td class="check-n">✗</td><td class="check-n">✗</td></tr>
+        <tr><td class="feat">Authority tiers</td><td class="check-y orlix-col">✓ 5 levels</td><td class="check-n">✗</td><td class="check-p">basic</td><td class="check-n">✗</td></tr>
+        <tr><td class="feat">Vendor-agnostic memory</td><td class="check-y orlix-col">✓</td><td class="check-n">✗</td><td class="check-p">partial</td><td class="check-n">✗</td></tr>
+        <tr><td class="feat">Outcome verification</td><td class="check-y orlix-col">✓</td><td class="check-n">✗</td><td class="check-n">✗</td><td class="check-n">✗</td></tr>
+        <tr><td class="feat">Local-first / self-hosted</td><td class="check-y orlix-col">✓</td><td class="check-n">✗</td><td class="check-p">partial</td><td class="check-n">✗</td></tr>
+        <tr><td class="feat">Open source</td><td class="check-y orlix-col">✓ MIT</td><td class="check-n">✗</td><td class="check-p">partial</td><td class="check-n">✗</td></tr>
+        <tr><td class="feat">Autonomy level</td><td class="check-y orlix-col">L5</td><td class="check-p">L2–L3</td><td class="check-p">L4</td><td class="check-p">L2</td></tr>
+      </tbody>
+    </table>
+    <p class="muted" style="margin-top:14px">// ✓ = full support · partial = limited or in-progress · ✗ = not supported</p>
+  </section>
+
+  <!-- ── PRICING ── -->
+  <section id="pricing" class="fade-in">
+    <div class="crumb"><span class="root">~/orlix</span><span class="sep">/</span><span class="here">pricing.json</span></div>
     <div class="sec-head">
       <div class="file">$ orlix pricing --list</div>
-      <h2><span class="num">06</span> Pricing</h2>
+      <h2><span class="num">08</span> Pricing</h2>
     </div>
-    <p class="hero-sub">
-      Start free. Scale autonomy as trust grows.
-      <span class="dim">No lock-in — export your data anytime.</span>
-    </p>
-
+    <p class="hero-sub">Start free. Scale autonomy as trust grows. <span class="dim">No lock-in — export your data anytime.</span></p>
+    <div class="pricing-toggle">
+      <span>billing:</span>
+      <div class="toggle-btn" role="group" aria-label="Billing period">
+        <button class="toggle-opt active" id="toggleMonthly">monthly</button>
+        <button class="toggle-opt" id="toggleAnnual">annual</button>
+      </div>
+      <span class="save-badge" id="saveBadge" style="display:none">save 20%</span>
+    </div>
     <div class="pricing-grid">
-      <!-- Free -->
       <div class="plan-card">
         <div class="plan-name">free</div>
-        <div class="plan-price">$0<sub>/mo</sub></div>
+        <div class="plan-price" data-monthly="$0" data-annual="$0">$0<sub>/mo</sub></div>
+        <div class="plan-orig">&nbsp;</div>
         <div class="plan-tagline">For individuals exploring AI governance</div>
         <ul class="plan-features">
           <li>Authority tier: observe + suggest</li>
           <li>Memory: 30-day rolling window</li>
           <li>Policies: up to 5 active rules</li>
-          <li>Audit log: basic (7 days)</li>
+          <li>Audit log: 7-day retention</li>
           <li>2 integrations</li>
-          <li class="dim">No supervised execution</li>
-          <li class="dim">No memory export</li>
+          <li class="off">No supervised execution</li>
+          <li class="off">No memory export</li>
         </ul>
-        <button class="plan-cta" type="button" data-action="goto" data-target="access">
-          $ orlix init --free
-        </button>
+        <button class="plan-cta" data-goto="access">$ orlix init --free</button>
       </div>
-
-      <!-- Operator (featured) -->
       <div class="plan-card featured">
         <div class="plan-badge">popular</div>
         <div class="plan-name">operator</div>
-        <div class="plan-price">$29<sub>/mo</sub></div>
-        <div class="plan-tagline">For builders and operators running real workflows</div>
+        <div class="plan-price" data-monthly="$29" data-annual="$23">$29<sub>/mo</sub></div>
+        <div class="plan-orig" id="orig-operator">&nbsp;</div>
+        <div class="plan-tagline">For builders running real workflows</div>
         <ul class="plan-features">
           <li>Authority tier: up to supervised</li>
           <li>Memory: unlimited · versioned</li>
           <li>Policies: unlimited</li>
-          <li>Audit log: full · 90-day retention</li>
+          <li>Audit log: 90-day retention</li>
           <li>All live integrations</li>
           <li>Memory export (JSON)</li>
           <li>Rollback: 30 days</li>
         </ul>
-        <button class="plan-cta" type="button" data-action="goto" data-target="access">
-          $ orlix init --operator
-        </button>
+        <button class="plan-cta" data-goto="access">$ orlix init --operator</button>
       </div>
-
-      <!-- Autonomous -->
       <div class="plan-card">
         <div class="plan-name">autonomous</div>
-        <div class="plan-price">$79<sub>/mo</sub></div>
-        <div class="plan-tagline">For power users who need full L5 autonomy</div>
+        <div class="plan-price" data-monthly="$79" data-annual="$63">$79<sub>/mo</sub></div>
+        <div class="plan-orig" id="orig-autonomous">&nbsp;</div>
+        <div class="plan-tagline">For power users who need full L5</div>
         <ul class="plan-features">
           <li>Authority tier: full autonomous (L5)</li>
           <li>Everything in Operator</li>
@@ -1139,111 +720,176 @@ footer { padding: 36px 0 64px; font-size: .78rem; color: var(--dim); }
           <li>Priority support + early features</li>
           <li>Dedicated memory namespace</li>
         </ul>
-        <button class="plan-cta" type="button" data-action="goto" data-target="access">
-          $ orlix init --autonomous
-        </button>
+        <button class="plan-cta" data-goto="access">$ orlix init --autonomous</button>
       </div>
     </div>
-    <p class="muted" style="margin-top:14px">// all plans are billed monthly, cancel anytime. early access pricing — locked for life.</p>
+    <p class="muted" style="margin-top:14px">// early access pricing — locked for life when you join. billed monthly or annually. cancel anytime.</p>
   </section>
 
-  <!-- ==============================================================
-       08 · ROADMAP
-       ============================================================ -->
-  <section id="roadmap" class="fade-in">
-    <div class="crumb">
-      <span class="root">~/orlix</span><span class="sep">/</span><span class="here">CHANGELOG</span>
+  <!-- ── FAQ ── -->
+  <section id="faq" class="fade-in">
+    <div class="crumb"><span class="root">~/orlix</span><span class="sep">/</span><span class="here">faq.md</span></div>
+    <div class="sec-head">
+      <div class="file">$ cat faq.md</div>
+      <h2><span class="num">09</span> Frequently asked questions</h2>
     </div>
+    <div class="faq-list" id="faqList">
+      <div class="faq-item">
+        <button class="faq-q">What AI models does Orlix work with?<span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Orlix is <span class="hl">model-agnostic</span>. It works with any LLM that supports an API — Claude, GPT-4, Gemini, Llama, and local models via Ollama. Your memory, policies, and audit trail stay intact when you switch. The model is just a runtime; Orlix is the operating system.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Where is my data stored?<span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">By default, your memory and policies are stored <span class="hl">locally</span> on your machine, encrypted at rest with AES-256. Cloud sync is opt-in and zero-knowledge — we never see your memory contents. On the Autonomous plan you also get a dedicated cloud memory namespace, still encrypted.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">How is this different from an AI agent?<span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Agents do tasks and stop. Orlix governs outcomes continuously. An agent runs a workflow; Orlix maintains a <span class="hl">living model of your goals</span>, enforces policy on every action, verifies that outcomes actually matched intent, and updates policy from what it learns. The loop never ends — it compounds.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Can I run Orlix fully locally?<span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner"><span class="ok">Yes.</span> Orlix is local-first by design. The governance loop, memory store, and policy engine all run on your machine. Cloud features (sync, backup, multi-device) are opt-in. Pair it with a local model via Ollama and nothing leaves your device.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">What happens if I cancel or export my data?<span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Your memory, goals, policies, and audit logs export as standard JSON at any time — no cancellation required. Cancel and your local data stays on your machine forever. We have no retention interest in your memory; it was always yours.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Is the source code open?<span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner"><span class="ok">Yes</span> — the website and core governance engine are MIT licensed on <a href="https://github.com/tylerbroqs/orlixai" target="_blank" rel="noopener noreferrer">GitHub</a>. We believe the infrastructure layer for personal AI should be auditable and community-maintained.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">How long does initial setup take?<span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Most operators are running their first supervised workflow within <span class="hl">15 minutes</span>. Connect a calendar or inbox, set your authority tier, define 1–3 policies, and Orlix starts observing. The world model builds as you work — it gets smarter over time, not just at setup.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Can Orlix be wrong? What if an action is a mistake?<span class="faq-icon">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Every action in <span class="hl">supervised</span> or lower tier requires your confirmation or sends a notification before executing. The default tier is <code>supervised</code>. Even in autonomous mode, every action produces a receipt and is <span class="ok">rollback-eligible for 30 days</span>. You can always undo.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TESTIMONIALS ── -->
+  <section id="testimonials" class="fade-in">
+    <div class="crumb"><span class="root">~/orlix</span><span class="sep">/</span><span class="here">testimonials/</span></div>
+    <div class="sec-head">
+      <div class="file">$ cat testimonials/*.txt</div>
+      <h2><span class="num">10</span> What operators say</h2>
+    </div>
+    <div class="testi-grid">
+      <div class="testi-card">
+        <div class="testi-body"><blockquote>I've stopped re-explaining my context to every new session. Orlix just knows — my goals, my constraints, my preferences. It's the first AI tool that actually feels like infrastructure.</blockquote></div>
+        <div class="testi-meta"><div class="testi-name">Alex K.</div><div class="testi-role">Founder, early-stage SaaS</div><div class="testi-plan">operator plan · 4 months</div></div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-body"><blockquote>The audit trail alone is worth it. I can see exactly why Orlix sent that message, what policy triggered it, and what the outcome was. No other tool gives me that.</blockquote></div>
+        <div class="testi-meta"><div class="testi-name">Sam R.</div><div class="testi-role">Staff engineer, fintech</div><div class="testi-plan">autonomous plan · 2 months</div></div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-body"><blockquote>I run my entire content operation on Orlix now. It manages my publishing schedule, surfaces drafts at the right time, and knows my brand voice better than a new hire would after a month.</blockquote></div>
+        <div class="testi-meta"><div class="testi-name">Maya T.</div><div class="testi-role">Creator, 140k subscribers</div><div class="testi-plan">operator plan · 6 months</div></div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-body"><blockquote>We tried three agentic tools before Orlix. They all did tasks. Orlix governs outcomes — that distinction sounds subtle until you realise the others kept finishing tasks that didn't actually solve the problem.</blockquote></div>
+        <div class="testi-meta"><div class="testi-name">Jordan M.</div><div class="testi-role">CTO, 12-person startup</div><div class="testi-plan">autonomous plan · 3 months</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SECURITY ── -->
+  <section id="security" class="fade-in">
+    <div class="crumb"><span class="root">~/orlix</span><span class="sep">/</span><span class="here">security.md</span></div>
+    <div class="sec-head">
+      <div class="file">$ cat security.md</div>
+      <h2><span class="num">11</span> Security &amp; privacy</h2>
+    </div>
+    <p class="hero-sub">Your AI operating system should be the most trusted layer in your stack — not the least. We built Orlix with that constraint in mind from day one.</p>
+    <div class="sec-features">
+      <div class="sec-feat"><div class="sf-icon">🔐</div><div class="sf-title">AES-256 encryption at rest</div><div class="sf-desc">All memory, policies, and receipts are encrypted before being written to disk. Key management is yours — we never hold decryption keys.</div></div>
+      <div class="sec-feat"><div class="sf-icon">🌐</div><div class="sf-title">Zero-knowledge cloud sync</div><div class="sf-desc">Cloud backup is opt-in and end-to-end encrypted. Data is encrypted client-side before upload — our servers see ciphertext only.</div></div>
+      <div class="sec-feat"><div class="sf-icon">🏠</div><div class="sf-title">Local-first architecture</div><div class="sf-desc">The full governance loop runs on your machine. No data leaves your device unless you explicitly enable a cloud feature.</div></div>
+      <div class="sec-feat"><div class="sf-icon">📋</div><div class="sf-title">No training on your data</div><div class="sf-desc">Your memory, policies, and interaction history are never used to train models — ours or anyone else's.</div></div>
+      <div class="sec-feat"><div class="sf-icon">🔍</div><div class="sf-title">Open source &amp; auditable</div><div class="sf-desc">The core engine is MIT licensed. Independent security researchers can audit the codebase — and we welcome responsible disclosure.</div></div>
+      <div class="sec-feat"><div class="sf-icon">✅</div><div class="sf-title">SOC 2 Type II in progress</div><div class="sf-desc">We're completing our SOC 2 Type II audit. GDPR and CCPA compliant. DPA available for business plans upon request.</div></div>
+    </div>
+    <p class="muted" style="margin-top:14px">// to report a vulnerability: security@orlixai.xyz · 48h acknowledgement · coordinated disclosure</p>
+  </section>
+
+  <!-- ── OPEN SOURCE / COMMUNITY ── -->
+  <section id="community" class="fade-in">
+    <div class="crumb"><span class="root">~/orlix</span><span class="sep">/</span><span class="here">community/</span></div>
+    <div class="sec-head">
+      <div class="file">$ cat community.md</div>
+      <h2><span class="num">12</span> Open source &amp; community</h2>
+    </div>
+    <p class="hero-sub">Orlix is MIT licensed and open to contributions. The infrastructure for personal AI should be community-owned, auditable, and forkable.</p>
+    <div class="community-grid">
+      <div class="com-card">
+        <div class="com-icon">⭐</div>
+        <div class="com-title">Star on GitHub</div>
+        <div class="com-desc">The core engine, website, and integration specs are all on GitHub. Star the repo to follow progress and get notified of releases.</div>
+        <a class="com-link" href="https://github.com/tylerbroqs/orlixai" target="_blank" rel="noopener noreferrer">github.com/tylerbroqs/orlixai →</a>
+      </div>
+      <div class="com-card">
+        <div class="com-icon">💬</div>
+        <div class="com-title">Join the community</div>
+        <div class="com-desc">Ask questions, share workflows, propose integrations, and shape the roadmap alongside 2,400+ operators building with Orlix.</div>
+        <a class="com-link" href="#access" data-goto="access">join the waitlist to get an invite →</a>
+      </div>
+      <div class="com-card">
+        <div class="com-icon">🔧</div>
+        <div class="com-title">Contribute</div>
+        <div class="com-desc">Bug fixes, new terminal commands, integrations, docs — all contributions welcome. Read CONTRIBUTING.md to get started.</div>
+        <a class="com-link" href="https://github.com/tylerbroqs/orlixai/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer">read contributing guide →</a>
+      </div>
+    </div>
+    <div class="jsonview" style="margin-top:24px">
+      <div class="jhead"><span>$ git clone https://github.com/tylerbroqs/orlixai.git</span><span class="ok">MIT license</span></div>
+      <div class="jbody">
+        <div><span class="k">license</span>:&nbsp;&nbsp;<span class="s">"MIT"</span></div>
+        <div><span class="k">version</span>:&nbsp;&nbsp;<span class="s">"0.5.0-beta"</span></div>
+        <div><span class="k">stack</span>:&nbsp;&nbsp;&nbsp;<span class="s">"vanilla HTML · CSS · JS — no build step"</span></div>
+        <div><span class="k">run</span>:&nbsp;&nbsp;&nbsp;&nbsp;<span class="s">"open index.html"</span> <span class="n">// that's it</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ROADMAP ── -->
+  <section id="roadmap" class="fade-in">
+    <div class="crumb"><span class="root">~/orlix</span><span class="sep">/</span><span class="here">CHANGELOG</span></div>
     <div class="sec-head">
       <div class="file">$ git log --oneline --graph</div>
-      <h2><span class="num">07</span> Roadmap</h2>
+      <h2><span class="num">13</span> Roadmap</h2>
     </div>
-    <p class="hero-sub">
-      Five phases. Each one unlocks a new capability. When all five run continuously,
-      Orlix becomes a true personal operating system.
-    </p>
-
+    <p class="hero-sub">Five phases. Each unlocks a new capability. When all five run continuously, Orlix becomes a true personal operating system.</p>
     <div>
-      <div class="log-row">
-        <span class="status done">✓ shipped</span>
-        <div class="body">
-          <span class="lbl">v0.1 — Observe</span>
-          <p>Persistent memory across sessions, source-tracked facts, first calendar &amp; notes integrations.</p>
-        </div>
-      </div>
-      <div class="log-row">
-        <span class="status done">✓ shipped</span>
-        <div class="body">
-          <span class="lbl">v0.2 — Decide</span>
-          <p>Rules-based decision engine with priority weighting and authority checks before any action.</p>
-        </div>
-      </div>
-      <div class="log-row">
-        <span class="status done">✓ shipped</span>
-        <div class="body">
-          <span class="lbl">v0.3 — Act</span>
-          <p>Approval workflows, action receipts, and supervised execution for real tasks.</p>
-        </div>
-      </div>
-      <div class="log-row">
-        <span class="status done">✓ shipped</span>
-        <div class="body">
-          <span class="lbl">v0.4 — Verify</span>
-          <p>Outcome tracking that links every action back to the goal it served.</p>
-        </div>
-      </div>
-      <div class="log-row">
-        <span class="status now">● building</span>
-        <div class="body">
-          <span class="lbl">v0.5 — Evolve</span>
-          <p>Policy evolution from real outcomes, pattern detection, adaptive behavior — agent → partner.</p>
-        </div>
-      </div>
-      <div class="log-row">
-        <span class="status soon">◌ planned</span>
-        <div class="body">
-          <span class="lbl">v1.0 — Symbiotic</span>
-          <p>Multi-agent coordination, proactive goal management, full L5 autonomy with co-adaptive learning.</p>
-        </div>
-      </div>
+      <div class="log-row"><span class="status done">✓ shipped</span><div class="body"><span class="lbl">v0.1 — Observe</span><p>Persistent memory across sessions, source-tracked facts, calendar &amp; notes integrations.</p></div></div>
+      <div class="log-row"><span class="status done">✓ shipped</span><div class="body"><span class="lbl">v0.2 — Decide</span><p>Rules-based decision engine with priority weighting and authority checks before any action.</p></div></div>
+      <div class="log-row"><span class="status done">✓ shipped</span><div class="body"><span class="lbl">v0.3 — Act</span><p>Approval workflows, action receipts, and supervised execution for real tasks.</p></div></div>
+      <div class="log-row"><span class="status done">✓ shipped</span><div class="body"><span class="lbl">v0.4 — Verify</span><p>Outcome tracking that links every action back to the goal it served.</p></div></div>
+      <div class="log-row"><span class="status now">● building</span><div class="body"><span class="lbl">v0.5 — Evolve</span><p>Policy evolution from real outcomes, pattern detection, adaptive behaviour — agent → partner.</p></div></div>
+      <div class="log-row"><span class="status soon">◌ planned</span><div class="body"><span class="lbl">v1.0 — Symbiotic</span><p>Multi-agent coordination, proactive goal management, full L5 autonomy with co-adaptive learning loop.</p></div></div>
     </div>
   </section>
 
-  <!-- ==============================================================
-       09 · EARLY ACCESS
-       ============================================================ -->
+  <!-- ── ACCESS ── -->
   <section id="access" class="fade-in">
-    <div class="crumb">
-      <span class="root">~/orlix</span><span class="sep">/</span><span class="here">access.sh</span>
-    </div>
+    <div class="crumb"><span class="root">~/orlix</span><span class="sep">/</span><span class="here">access.sh</span></div>
     <div class="sec-head">
       <div class="file">$ ./access.sh --request</div>
-      <h2><span class="num">08</span> Get early access</h2>
+      <h2><span class="num">14</span> Get early access</h2>
     </div>
-    <p class="hero-sub">
-      Orlix is in active development. We're building infrastructure for a true human-AI partnership —
-      and looking for early operators to help shape it.
-    </p>
-
+    <p class="hero-sub">Orlix is in active development. We're building infrastructure for a true human-AI partnership — and looking for early operators to help shape it.</p>
     <form id="accessForm" class="terminal" style="margin-top:24px" novalidate>
       <div class="term-bar">
-        <span class="dots" aria-hidden="true">
-          <span style="background:var(--red)"></span>
-          <span style="background:var(--amber)"></span>
-          <span style="background:var(--green)"></span>
-        </span>
+        <span class="dots" aria-hidden="true"><span style="background:var(--red)"></span><span style="background:var(--amber)"></span><span style="background:var(--green)"></span></span>
         <span class="lbl">access-request — form</span>
       </div>
       <div class="term-body" style="max-height:none;min-height:auto;padding:20px 16px">
         <div class="term-log">
-          <div class="ps1-row">
-            <span class="ps1">
-              <span class="user">guest</span><span class="sym">@</span><span class="path">orlix</span><span class="sym">:~$</span>
-            </span>
-            <span class="cmdline">./access.sh --request</span>
-          </div>
+          <div class="ps1-row"><span class="ps1"><span class="user">guest</span><span class="sym">@</span><span class="path">orlix</span><span class="sym">:~$</span></span><span class="cmdline">./access.sh --request</span></div>
         </div>
-        <div class="term-log" style="margin-top:16px">
+        <div style="margin-top:16px">
           <div class="field-row">
             <label class="lbl" for="accessEmail">&gt; email_address</label>
             <input type="email" required id="accessEmail" placeholder="you@domain.com" autocomplete="email">
@@ -1252,10 +898,19 @@ footer { padding: 36px 0 64px; font-size: .78rem; color: var(--dim); }
             <label class="lbl" for="accessRole">&gt; role</label>
             <select id="accessRole">
               <option value="founder">founder</option>
+              <option value="engineer">engineer</option>
               <option value="operator">operator</option>
               <option value="creator">creator</option>
               <option value="builder">builder</option>
               <option value="researcher">researcher</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <label class="lbl" for="accessPlan">&gt; interested_plan</label>
+            <select id="accessPlan">
+              <option value="free">free</option>
+              <option value="operator" selected>operator ($29/mo)</option>
+              <option value="autonomous">autonomous ($79/mo)</option>
             </select>
           </div>
           <div class="field-row">
@@ -1265,530 +920,390 @@ footer { padding: 36px 0 64px; font-size: .78rem; color: var(--dim); }
         </div>
       </div>
       <div class="term-input-row" style="justify-content:flex-end">
-        <button type="submit" class="cmd-btn primary">
-          <span class="pfx">$</span> submit --confirm
-        </button>
+        <button type="submit" class="cmd-btn primary"><span class="pfx">$</span> submit --confirm</button>
       </div>
-      <div class="term-hint" id="accessResult" role="alert" aria-live="polite">
-        your data stays local until you submit. no spam, ever.
-      </div>
+      <div class="term-hint" id="accessResult" role="alert" aria-live="polite">your data stays local until you submit. no spam, ever.</div>
     </form>
   </section>
 
-</div><!-- /.wrap -->
+</div>
 </main>
 
 <button id="backTop" type="button" aria-label="Back to top">↑</button>
 
-<!-- ================================================================
-     FOOTER
-     ============================================================= -->
-<footer role="contentinfo">
+<footer>
   <div class="wrap">
     <div class="foot-echo">
-      <span class="amber-hl">orlix</span><span class="dim">@</span>system<span class="dim">:~$</span>
-      echo "the future of AI is not assistance — it's partnership."
-      <br>
+      <span class="amber-hl">orlix</span><span class="dim">@</span>system<span class="dim">:~$</span> echo "the future of AI is not assistance — it's partnership."<br>
       <span class="ok">the future of AI is not assistance — it's partnership.</span>
     </div>
     <div class="foot-grid">
-      <div class="foot-copy">
-        © 2026 Orlix — local-first, sovereign, auditable.
-        <br>
-        <a href="https://github.com/tylerbroqs/orlixai" target="_blank" rel="noopener noreferrer">open source on GitHub</a>
-      </div>
-      <nav class="foot-links" aria-label="Footer navigation">
-        <a href="#top" data-action="goto" data-target="top">top</a>
-        <a href="#problem" data-action="goto" data-target="problem">problem</a>
-        <a href="#product" data-action="goto" data-target="product">product</a>
-        <a href="#levels" data-action="goto" data-target="levels">levels</a>
-        <a href="#memory" data-action="goto" data-target="memory">memory</a>
-        <a href="#integrations" data-action="goto" data-target="integrations">integrations</a>
-        <a href="#pricing" data-action="goto" data-target="pricing">pricing</a>
-        <a href="#roadmap" data-action="goto" data-target="roadmap">roadmap</a>
-        <a href="#access" data-action="goto" data-target="access">access</a>
+      <div class="foot-copy">© 2026 Orlix — local-first, sovereign, auditable.<br><a href="https://github.com/tylerbroqs/orlixai" target="_blank" rel="noopener noreferrer">open source · MIT license</a></div>
+      <nav class="foot-links" aria-label="Footer links">
+        <a href="#top" data-goto="top">top</a>
+        <a href="#problem" data-goto="problem">problem</a>
+        <a href="#product" data-goto="product">docs</a>
+        <a href="#levels" data-goto="levels">levels</a>
+        <a href="#memory" data-goto="memory">memory</a>
+        <a href="#use-cases" data-goto="use-cases">use cases</a>
+        <a href="#integrations" data-goto="integrations">integrations</a>
+        <a href="#compare" data-goto="compare">compare</a>
+        <a href="#pricing" data-goto="pricing">pricing</a>
+        <a href="#faq" data-goto="faq">faq</a>
+        <a href="#security" data-goto="security">security</a>
+        <a href="#community" data-goto="community">oss</a>
+        <a href="#roadmap" data-goto="roadmap">roadmap</a>
+        <a href="#access" data-goto="access">access</a>
       </nav>
     </div>
   </div>
 </footer>
 
-<!-- ================================================================
-     JAVASCRIPT
-     ============================================================= -->
 <script>
-(function () {
-  'use strict';
+(function(){
+'use strict';
 
-  /* ---- helpers ---- */
-  function esc(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+/* helpers */
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function goto(id){const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'})}
+
+/* ── BOOT ── */
+const bootLines=[
+  {t:'$ orlix --version',c:''},
+  {t:'orlix v0.5.0-beta · personal AI operating system',c:'ok'},
+  {t:'$ orlix status --all',c:''},
+  {t:'[ok] world model ........... online',c:'ok'},
+  {t:'[ok] policy engine ......... 14 active rules',c:'ok'},
+  {t:'[ok] memory ................ persistent · local-first · encrypted',c:'ok'},
+  {t:'[ok] audit log ............. recording · receipt #0847',c:'ok'},
+  {t:'[ok] integrations .......... 10 connected · 6 pending',c:'ok'},
+  {t:'[ok] authority tier ........ supervised (default)',c:'ok'},
+  {t:'$ echo $MOTTO',c:''},
+  {t:'"AI generates text. You do all the work." — not anymore.',c:'hl'},
+];
+const bootEl=document.getElementById('bootLog');
+let bi=0,ci=0,rendered=[];
+function bootTick(){
+  if(bi>=bootLines.length){bootEl.innerHTML=rendered.join('\n')+'\n<span class="cursor"></span>';return}
+  const ln=bootLines[bi];
+  if(ci<=ln.t.length){
+    const p=ln.t.slice(0,ci);
+    const sp=ln.c?`<span class="${ln.c}">${esc(p)}</span>`:esc(p);
+    bootEl.innerHTML=[...rendered,sp+'<span class="cursor"></span>'].join('\n');
+    ci++;setTimeout(bootTick,ln.t.startsWith('$')?18:5);
+  } else {
+    rendered.push(ln.c?`<span class="${ln.c}">${esc(ln.t)}</span>`:esc(ln.t));
+    bi++;ci=0;setTimeout(bootTick,70);
   }
-  function gotoSection(id) {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
+}
+bootTick();
 
-  /* ====================================================
-     BOOT SEQUENCE
-     ==================================================== */
-  const bootLines = [
-    { t: '$ orlix --version',                            c: '' },
-    { t: 'orlix v0.5.0-beta · personal AI OS',           c: 'ok' },
-    { t: '$ orlix status --all',                         c: '' },
-    { t: '[ok] world model ........... online',          c: 'ok' },
-    { t: '[ok] policy engine ......... 14 active rules', c: 'ok' },
-    { t: '[ok] memory ................ persistent · local-first', c: 'ok' },
-    { t: '[ok] audit log ............. recording',       c: 'ok' },
-    { t: '[ok] integrations .......... 8 connected',     c: 'ok' },
-    { t: '$ echo $MOTTO',                                c: '' },
-    { t: '"AI generates text. You do all the work." — not anymore.', c: 'hl' },
-  ];
+/* ── SHELL ── */
+const termBody=document.getElementById('termBody');
+const termInput=document.getElementById('termInput');
+const HIST=[];let histIdx=-1;
 
-  const bootEl = document.getElementById('bootLog');
-  let bi = 0, ci = 0;
-  let rendered = [];
+function printLine(html,cls){
+  const d=document.createElement('div');
+  d.className=cls?`out ${cls}`:'out';d.innerHTML=html;
+  termBody.appendChild(d);termBody.scrollTop=termBody.scrollHeight;
+}
+function printPrompt(cmd){
+  const d=document.createElement('div');d.className='term-log';
+  d.innerHTML=`<div class="ps1-row"><span class="ps1"><span class="user">guest</span><span class="sym">@</span><span class="path">orlix</span><span class="sym">:~$</span></span><span class="cmdline">${esc(cmd)}</span></div>`;
+  termBody.appendChild(d);termBody.scrollTop=termBody.scrollHeight;
+}
 
-  function bootTick() {
-    if (bi >= bootLines.length) {
-      bootEl.innerHTML = rendered.join('\n') + '\n<span class="cursor"></span>';
-      return;
-    }
-    const line = bootLines[bi];
-    if (ci <= line.t.length) {
-      const partial = line.t.slice(0, ci);
-      const span = line.c
-        ? `<span class="${line.c}">${esc(partial)}</span>`
-        : esc(partial);
-      const tmp = rendered.slice();
-      tmp.push(span + '<span class="cursor"></span>');
-      bootEl.innerHTML = tmp.join('\n');
-      ci++;
-      setTimeout(bootTick, line.t.startsWith('$') ? 18 : 6);
-    } else {
-      const span = line.c
-        ? `<span class="${line.c}">${esc(line.t)}</span>`
-        : esc(line.t);
-      rendered.push(span);
-      bootEl.innerHTML = rendered.join('\n') + '<span class="cursor"></span>';
-      bi++; ci = 0;
-      setTimeout(bootTick, 80);
-    }
-  }
-  bootTick();
+const SM={top:'top',problem:'problem',product:'product',levels:'levels',memory:'memory',
+  'use-cases':'use-cases','use cases':'use-cases',integrations:'integrations',compare:'compare',
+  pricing:'pricing',faq:'faq',testimonials:'testimonials',security:'security',
+  community:'community',roadmap:'roadmap',access:'access'};
 
-  /* ====================================================
-     INTERACTIVE SHELL
-     ==================================================== */
-  const termBody  = document.getElementById('termBody');
-  const termInput = document.getElementById('termInput');
-
-  const sectionMap = {
-    top: 'top', problem: 'problem', product: 'product', levels: 'levels',
-    memory: 'memory', integrations: 'integrations', pricing: 'pricing',
-    roadmap: 'roadmap', access: 'access'
-  };
-
-  function printLine(html, cls) {
-    const div = document.createElement('div');
-    div.className = cls ? `out ${cls}` : 'out';
-    div.innerHTML = html;
-    termBody.appendChild(div);
-    termBody.scrollTop = termBody.scrollHeight;
-  }
-
-  function printPrompt(cmd) {
-    const div = document.createElement('div');
-    div.className = 'term-log';
-    div.innerHTML = `<div class="ps1-row">
-      <span class="ps1">
-        <span class="user">guest</span><span class="sym">@</span><span class="path">orlix</span><span class="sym">:~$</span>
-      </span>
-      <span class="cmdline">${esc(cmd)}</span>
-    </div>`;
-    termBody.appendChild(div);
-    termBody.scrollTop = termBody.scrollHeight;
-  }
-
-  const HISTORY = [];
-  let histIdx = -1;
-
-  const commands = {
-    help() {
-      printLine(`<span class="amber-hl">orlix-shell</span> — available commands:`);
-      printLine(`  <span class="hl">help</span>              show this list`);
-      printLine(`  <span class="hl">tour</span>              guided walkthrough of orlix`);
-      printLine(`  <span class="hl">status</span>            show system status`);
-      printLine(`  <span class="hl">version</span>           show version info`);
-      printLine(`  <span class="hl">ls [sections]</span>     list page sections`);
-      printLine(`  <span class="hl">cd &lt;section&gt;</span>      jump to section`);
-      printLine(`  <span class="hl">cat &lt;file&gt;</span>        read a file (receipt.log, motto.txt, policy.txt)`);
-      printLine(`  <span class="hl">levels</span>            show autonomy levels (L1–L5)`);
-      printLine(`  <span class="hl">pricing</span>           show pricing tiers`);
-      printLine(`  <span class="hl">integrations</span>      list available integrations`);
-      printLine(`  <span class="hl">policy</span>            list active policies`);
-      printLine(`  <span class="hl">memory list</span>       preview memory contents`);
-      printLine(`  <span class="hl">whoami</span>            about this session`);
-      printLine(`  <span class="hl">uname -a</span>          system information`);
-      printLine(`  <span class="hl">uptime</span>            session uptime`);
-      printLine(`  <span class="hl">echo &lt;text&gt;</span>       echo text`);
-      printLine(`  <span class="hl">ping orlix</span>        check latency`);
-      printLine(`  <span class="hl">access</span>            jump to early access form`);
-      printLine(`  <span class="hl">man orlix</span>         open manual page`);
-      printLine(`  <span class="hl">clear</span>             clear the terminal`);
-    },
-
-    tour() {
-      printLine(`Starting guided tour — 6 stops…`, 'ok');
-      const stops = ['problem', 'product', 'levels', 'memory', 'integrations', 'pricing'];
-      stops.forEach((id, i) => {
-        setTimeout(() => {
-          gotoSection(id);
-          printLine(`[${i + 1}/${stops.length}] → <span class="hl">#${id}</span>`, 'ok');
-        }, (i + 1) * 1000);
-      });
-    },
-
-    status() {
-      printLine(`<span class="amber-hl">orlix system status</span>`);
-      printLine(`  world model  ......  <span class="ok">online</span>`);
-      printLine(`  policy engine .....  <span class="ok">14 active rules</span>`);
-      printLine(`  memory ............  <span class="ok">persistent · local-first</span>`);
-      printLine(`  audit log .........  <span class="ok">recording</span>`);
-      printLine(`  integrations ......  <span class="ok">8 connected · 4 pending</span>`);
-      printLine(`  authority tier ....  <span class="warn">observe</span> (guest session)`);
-    },
-
-    version() {
-      printLine(`orlix v0.5.0-beta`);
-      printLine(`build: 2026-06-13 · branch: main`);
-      printLine(`engine: governance-loop/v3 · policy: v14`);
-      printLine(`license: MIT`);
-    },
-
-    ls(args) {
-      if (!args.length || args[0] === 'sections' || args[0] === '-la') {
-        printLine(`drwxr-xr-x  <span class="hl">problem/</span>`);
-        printLine(`drwxr-xr-x  <span class="hl">product/</span>`);
-        printLine(`drwxr-xr-x  <span class="hl">levels/</span>`);
-        printLine(`drwxr-xr-x  <span class="hl">memory/</span>`);
-        printLine(`drwxr-xr-x  <span class="hl">integrations/</span>`);
-        printLine(`drwxr-xr-x  <span class="hl">pricing/</span>`);
-        printLine(`drwxr-xr-x  <span class="hl">roadmap/</span>`);
-        printLine(`drwxr-xr-x  <span class="hl">access/</span>`);
-      } else {
-        printLine(`ls: cannot access '${esc(args.join(' '))}': no such directory`, 'bad');
-      }
-    },
-
-    cd(args) {
-      const target = (args[0] || '').replace(/^\.?\/?/, '').toLowerCase();
-      if (sectionMap[target]) {
-        gotoSection(sectionMap[target]);
-        printLine(`→ now viewing <span class="hl">#${target}</span>`, 'ok');
-      } else {
-        printLine(`cd: <span class="bad">${esc(args.join(' ') || '~')}</span>: no such section`, 'bad');
-        printLine(`  available: problem, product, levels, memory, integrations, pricing, roadmap, access`);
-      }
-    },
-
-    cat(args) {
-      const f = (args[0] || '').toLowerCase();
-      if (f === 'receipt.log') {
-        printLine(`{`);
-        printLine(`  <span class="hl">intent</span>:   "Notify user of goal drift",`);
-        printLine(`  <span class="hl">context</span>:  "Goal 'Ship MVP' · 3 blockers · last touched 17d ago",`);
-        printLine(`  <span class="hl">policy</span>:   "Alert if goal drift &gt; 3 days · v14",`);
-        printLine(`  <span class="hl">action</span>:   "Priority alert sent" <span class="ok">✓</span>,`);
-        printLine(`  <span class="hl">approval</span>: "User confirmed re-prioritization",`);
-        printLine(`  <span class="hl">rollback</span>: "available · 30 days"`);
-        printLine(`}`);
-      } else if (f === 'motto.txt' || f === 'motto') {
-        printLine(`"AI generates text. You do all the work." — not anymore.`, 'hl');
-      } else if (f === 'policy.txt' || f === 'policies.txt') {
-        printLine(`<span class="amber-hl">active policies (v14):</span>`);
-        printLine(`  [01] notify_if_blocker_gt_48h       active`);
-        printLine(`  [02] require_confirm_before_send     active`);
-        printLine(`  [03] summarise_email_on_wake         active`);
-        printLine(`  [04] alert_if_goal_drift_gt_3d       active`);
-        printLine(`  [05] rollback_available_30d          active`);
-      } else {
-        printLine(`cat: <span class="bad">${esc(f || '(nothing)')}</span>: No such file`, 'bad');
-        printLine(`  known files: receipt.log, motto.txt, policy.txt`);
-      }
-    },
-
-    levels() {
-      printLine(`<span class="amber-hl">autonomy levels:</span>`);
-      printLine(`  L1  Informational    — read-only, answers questions`);
-      printLine(`  L2  Reactive         — single-session, no memory`);
-      printLine(`  L3  Mixed-initiative — suggests, human drives`);
-      printLine(`  L4  Agentic          — executes tasks, ends with task`);
-      printLine(`  L5  Symbiotic        — <span class="hl">orlix lives here</span>: persistent, evolving, auditable`, 'ok');
-    },
-
-    pricing() {
-      gotoSection('pricing');
-      printLine(`<span class="amber-hl">orlix pricing:</span>`);
-      printLine(`  free         $0/mo   — observe + suggest · 5 policies`);
-      printLine(`  operator    $29/mo   — supervised · unlimited · all integrations`);
-      printLine(`  autonomous  $79/mo   — full L5 · multi-agent · priority`);
-      printLine(`→ scrolled to pricing section`, 'ok');
-    },
-
-    integrations() {
-      gotoSection('integrations');
-      printLine(`<span class="amber-hl">connected integrations:</span>`);
-      printLine(`  <span class="ok">●</span> Google Calendar  <span class="ok">●</span> Apple Calendar`);
-      printLine(`  <span class="ok">●</span> Gmail            <span class="ok">●</span> Notion`);
-      printLine(`  <span class="ok">●</span> Linear           <span class="ok">●</span> Slack`);
-      printLine(`  <span class="ok">●</span> GitHub           <span class="ok">●</span> Google Drive`);
-      printLine(`  <span class="warn">◌</span> Outlook          <span class="warn">◌</span> Todoist  <span class="warn">◌</span> Dropbox  <span class="dim">(coming soon)</span>`);
-      printLine(`→ scrolled to integrations`, 'ok');
-    },
-
-    policy() {
-      printLine(`<span class="amber-hl">policy engine — 14 active rules</span>`);
-      printLine(`  run <span class="hl">cat policy.txt</span> to see full list`);
-      printLine(`  authority tier: <span class="warn">observe</span> (guest — policies are read-only)`);
-    },
-
-    memory(args) {
-      if (!args.length || args[0] === 'list') {
-        printLine(`<span class="amber-hl">memory preview (guest session — no persistent memory)</span>`);
-        printLine(`  goals:   0 stored  <span class="dim">(sign up to persist)</span>`);
-        printLine(`  facts:   0 stored`);
-        printLine(`  policies: 0 custom rules`);
-        printLine(`  tip: run <span class="hl">access</span> to get an Operator account`);
-      } else {
-        printLine(`memory: unknown subcommand '${esc(args[0])}'`, 'bad');
-      }
-    },
-
-    whoami() {
-      printLine(`guest@orlix — anonymous session`);
-      printLine(`  memory:   none stored`);
-      printLine(`  policies: none active`);
-      printLine(`  tier:     observe (read-only)`);
-      printLine(`  tip: <span class="hl">./access.sh --request</span> to get early access`);
-    },
-
-    uname(args) {
-      if (args[0] === '-a' || !args.length) {
-        printLine(`Orlix v0.5.0-beta governance-loop/v3 amd64 2026-06-13 GNU/TerminalOS`);
-      } else {
-        printLine(`uname: unknown option`, 'bad');
-      }
-    },
-
-    uptime() {
-      const t = Math.floor(performance.now() / 1000);
-      const m = Math.floor(t / 60), s = t % 60;
-      printLine(`up ${m}m ${s}s · load avg: 0.01 0.01 0.00 · 1 user`);
-    },
-
-    echo(args) {
-      if (!args.length) { printLine(''); return; }
-      printLine(esc(args.join(' ')));
-    },
-
-    ping(args) {
-      const host = args[0] || 'orlix';
-      if (host === 'orlix' || host === 'localhost') {
-        printLine(`PING ${host}: 56 data bytes`);
-        [11, 12, 10, 11].forEach((ms, i) => {
-          printLine(`64 bytes from ${host}: icmp_seq=${i} time=${ms} ms`, 'ok');
-        });
-        printLine(`--- ${host} ping statistics ---`);
-        printLine(`4 packets transmitted, 4 received, 0% packet loss`);
-      } else {
-        printLine(`ping: ${esc(host)}: name or service not known`, 'bad');
-      }
-    },
-
-    access() {
-      gotoSection('access');
-      printLine(`→ scrolled to early access form`, 'ok');
-    },
-
-    man(args) {
-      printLine(`ORLIX(1)             Personal AI Operating System             ORLIX(1)`);
-      printLine(``);
-      printLine(`<span class="hl">NAME</span>`);
-      printLine(`    orlix — governance layer for personal AI`);
-      printLine(``);
-      printLine(`<span class="hl">SYNOPSIS</span>`);
-      printLine(`    orlix [command] [options]`);
-      printLine(``);
-      printLine(`<span class="hl">DESCRIPTION</span>`);
-      printLine(`    Orlix observes your goals and context, decides what matters against`);
-      printLine(`    your policies, acts (with approval where required), verifies the`);
-      printLine(`    outcome, and updates its policy from what happened. Every step is`);
-      printLine(`    logged as a reviewable receipt.`);
-      printLine(``);
-      printLine(`<span class="hl">AUTHORITY TIERS</span>`);
-      printLine(`    observe, suggest, confirm, supervised, autonomous`);
-      printLine(``);
-      printLine(`<span class="hl">SEE ALSO</span>`);
-      printLine(`    levels(1), receipt.log(5), access.sh(1), policy.txt(5)`);
-    },
-
-    clear() { termBody.innerHTML = ''; },
-
-    sudo() {
-      printLine(`Nice try. guest sessions run at authority tier: <span class="hl">observe</span>.`, 'warn');
-      printLine(`Elevation requires a signed policy token. Run <span class="hl">access</span> to get one.`);
-    },
-
-    exit() { printLine(`logout — session will persist until browser is closed.`, 'dim'); },
-    quit() { commands.exit(); },
-  };
-
-  function runCommand(raw) {
-    const trimmed = raw.trim();
-    if (!trimmed) return;
-    HISTORY.unshift(trimmed);
-    histIdx = -1;
-    printPrompt(trimmed);
-    const parts = trimmed.split(/\s+/);
-    const cmd   = parts[0].toLowerCase();
-    const args  = parts.slice(1);
-    if (commands[cmd]) {
-      commands[cmd](args);
-    } else {
-      printLine(`command not found: <span class="bad">${esc(cmd)}</span> — type <span class="hl">help</span> for a list`, 'bad');
-    }
-  }
-
-  termInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      runCommand(termInput.value);
-      termInput.value = '';
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (histIdx < HISTORY.length - 1) {
-        histIdx++;
-        termInput.value = HISTORY[histIdx] || '';
-      }
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      if (histIdx > 0) {
-        histIdx--;
-        termInput.value = HISTORY[histIdx] || '';
-      } else {
-        histIdx = -1;
-        termInput.value = '';
-      }
-    } else if (e.key === 'Tab') {
-      e.preventDefault();
-      const v = termInput.value.trim().toLowerCase();
-      const matches = Object.keys(commands).filter(c => c.startsWith(v));
-      if (matches.length === 1) {
-        termInput.value = matches[0] + ' ';
-      } else if (matches.length > 1) {
-        printPrompt(v);
-        printLine(matches.join('  '));
-      }
-    }
-  });
-
-  document.getElementById('termSendBtn').addEventListener('click', () => {
-    runCommand(termInput.value);
-    termInput.value = '';
-    termInput.focus();
-  });
-
-  termBody.addEventListener('click', () => termInput.focus());
-
-  document.getElementById('focusTermBtn').addEventListener('click', () => {
-    document.querySelector('.terminal').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setTimeout(() => termInput.focus(), 400);
-  });
-
-  /* ====================================================
-     GENERIC DATA-ACTION BUTTONS
-     ==================================================== */
-  document.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-action]');
-    if (!btn) return;
-    const action = btn.getAttribute('data-action');
-    if (action === 'goto') {
-      e.preventDefault();
-      gotoSection(btn.getAttribute('data-target'));
-    }
-    if (action === 'clear-term') {
-      termBody.innerHTML = '';
-    }
-  });
-
-  document.getElementById('navAccess').addEventListener('click', () => gotoSection('access'));
-
-  /* ====================================================
-     DOWNLOAD export.json
-     ==================================================== */
-  document.getElementById('downloadExport').addEventListener('click', () => {
-    const data = {
-      schema: 'orlix/v1',
-      exported_at: new Date().toISOString(),
-      goals:    [{ name: 'Ship MVP', deadline: '2026-07-15', progress: 0.6 }],
-      policies: [{ rule: 'notify_if_blocker_gt_48h', version: 14, status: 'active' }],
-      facts:    [{ content: 'Alex owns the design review', source: 'email · 2026-06-02', confidence: 0.95 }]
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url; a.download = 'orlix-export.json';
-    document.body.appendChild(a); a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  });
-
-  /* ====================================================
-     ACCESS FORM
-     ==================================================== */
-  document.getElementById('accessForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const email  = document.getElementById('accessEmail').value.trim();
-    const role   = document.getElementById('accessRole').value;
-    const use    = document.getElementById('accessUse').value.trim();
-    const result = document.getElementById('accessResult');
-
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      result.innerHTML = `<span class="bad">error: invalid email address</span>`;
-      return;
-    }
-    const detail = use ? ` · use: ${esc(use)}` : '';
-    result.innerHTML = `<span class="ok">✓ request queued — ${esc(email)} (${esc(role)})${detail}. we'll reach out when your cohort opens.</span>`;
-    const btn = e.target.querySelector('button[type=submit]');
-    btn.disabled = true;
-    btn.style.opacity = '.5';
-  });
-
-  /* ====================================================
-     SCROLL ANIMATIONS (Intersection Observer)
-     ==================================================== */
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.style.opacity  = '1';
-        entry.target.style.transform = 'translateY(0)';
-        observer.unobserve(entry.target);
-      }
+const cmds={
+  help(){
+    printLine(`<span class="amber-hl">orlix-shell</span> — available commands:`);
+    const pairs=[
+      ['help','show this list'],['tour','guided walkthrough (14 stops)'],
+      ['status','system status'],['version','version info'],
+      ['ls [sections]','list page sections'],['cd &lt;section&gt;','jump to section'],
+      ['cat &lt;file&gt;','read a file (receipt.log, policy.txt, motto.txt)'],
+      ['levels','autonomy levels L1–L5'],['pricing','pricing tiers + toggle'],
+      ['integrations','list integrations'],['compare','vs competitors'],
+      ['use-cases','use case examples'],['faq','open FAQ section'],
+      ['security','security features'],['community','open source info'],
+      ['policy','list active policies'],['memory [list]','preview memory'],
+      ['stats','system stats'],['whoami','session info'],
+      ['uname [-a]','system info'],['uptime','session uptime'],
+      ['echo &lt;text&gt;','echo text'],['ping &lt;host&gt;','ping a host'],
+      ['man orlix','manual page'],['access','jump to access form'],
+      ['clear','clear terminal'],
+    ];
+    pairs.forEach(([k,v])=>printLine(`  <span class="hl">${k.padEnd(22,' ')}</span>${v}`));
+  },
+  tour(){
+    printLine(`Starting guided tour — 14 stops…`,'ok');
+    const stops=['problem','product','levels','memory','use-cases','integrations','compare','pricing','faq','testimonials','security','community','roadmap','access'];
+    stops.forEach((id,i)=>setTimeout(()=>{goto(id);printLine(`[${i+1}/${stops.length}] → <span class="hl">#${id}</span>`,'ok')},(i+1)*950));
+  },
+  status(){
+    printLine(`<span class="amber-hl">orlix system status:</span>`);
+    printLine(`  world model   ......  <span class="ok">online</span>`);
+    printLine(`  policy engine .......  <span class="ok">14 active rules · v14</span>`);
+    printLine(`  memory ..............  <span class="ok">persistent · encrypted · local-first</span>`);
+    printLine(`  audit log ...........  <span class="ok">recording · receipt #0847</span>`);
+    printLine(`  integrations ........  <span class="ok">10 connected · 6 pending</span>`);
+    printLine(`  authority tier ......  <span class="warn">observe</span> (guest session)`);
+    printLine(`  uptime ..............  ${Math.floor(performance.now()/60000)}m ${Math.floor(performance.now()/1000%60)}s`);
+  },
+  version(){
+    printLine(`orlix v0.5.0-beta`);
+    printLine(`build: 2026-06-13 · branch: main · commit: d8fbdfa`);
+    printLine(`engine: governance-loop/v3 · policy-version: 14`);
+    printLine(`license: <span class="ok">MIT</span> · <a href="https://github.com/tylerbroqs/orlixai" target="_blank">github.com/tylerbroqs/orlixai</a>`);
+  },
+  ls(a){
+    if(!a.length||a[0]==='sections'||a[0]==='-la'||a[0]==='-l'){
+      ['problem','product','levels','memory','use-cases','integrations','compare','pricing','faq','testimonials','security','community','roadmap','access'].forEach(s=>printLine(`drwxr-xr-x  <span class="hl">${s}/</span>`));
+    } else printLine(`ls: '${esc(a.join(' '))}': no such directory`,'bad');
+  },
+  cd(a){
+    const t=(a[0]||'').replace(/^\.?\/?/,'').toLowerCase();
+    const mapped=SM[t]||SM[t.replace(/\//,'')];
+    if(mapped){goto(mapped);printLine(`→ now viewing <span class="hl">#${mapped}</span>`,'ok');}
+    else{printLine(`cd: <span class="bad">${esc(a.join(' ')||'~')}</span>: no such section`,'bad');printLine(`  try: ${Object.keys(SM).filter((k,i)=>i%2===0).join(', ')}`);}
+  },
+  cat(a){
+    const f=(a[0]||'').toLowerCase();
+    if(f==='receipt.log'){
+      printLine('{');printLine(`  <span class="hl">intent</span>:   <span class="warn">"Notify user of goal drift"</span>,`);
+      printLine(`  <span class="hl">context</span>:  <span class="warn">"Goal 'Ship MVP' · 3 blockers · 17d ago"</span>,`);
+      printLine(`  <span class="hl">policy</span>:   <span class="warn">"alert_if_goal_drift_gt_3d · v14"</span>,`);
+      printLine(`  <span class="hl">action</span>:   <span class="warn">"Priority alert sent"</span> <span class="ok">✓</span>,`);
+      printLine(`  <span class="hl">outcome</span>:  <span class="warn">"Goal re-prioritised · 2 blockers resolved"</span>,`);
+      printLine(`  <span class="hl">rollback</span>: <span class="warn">"available · 30 days"</span>`);printLine('}');
+    } else if(f==='policy.txt'||f==='policies.txt'){
+      printLine(`<span class="amber-hl">active policies (v14):</span>`);
+      ['notify_if_blocker_gt_48h','require_confirm_before_send','summarise_email_on_wake','alert_if_goal_drift_gt_3d','rollback_available_30d'].forEach((p,i)=>printLine(`  [0${i+1}] ${p.padEnd(36,' ')}active`));
+    } else if(f==='motto.txt'||f==='motto'){
+      printLine(`"AI generates text. You do all the work." — not anymore.`,'hl');
+    } else {printLine(`cat: <span class="bad">${esc(f||'(nothing)')}</span>: No such file`,'bad');printLine(`  known: receipt.log, policy.txt, motto.txt`);}
+  },
+  levels(){
+    printLine(`<span class="amber-hl">autonomy levels:</span>`);
+    [['L1','Informational','read-only, answers questions'],['L2','Reactive','single-session, no memory'],['L3','Mixed-initiative','suggests, human drives'],['L4','Agentic','executes tasks, ends with task'],['L5','Symbiotic','orlix lives here: persistent, evolving, auditable']].forEach(([l,n,d])=>{
+      const c=l==='L5'?'ok':'';printLine(`  ${l}  ${n.padEnd(18,' ')} — ${d}`,c);
     });
-  }, { threshold: 0.07, rootMargin: '0px 0px -40px 0px' });
+  },
+  pricing(){
+    goto('pricing');
+    printLine(`<span class="amber-hl">orlix pricing:</span>`);
+    printLine(`  free         $0/mo    — observe+suggest · 5 policies · 2 integrations`);
+    printLine(`  operator    $29/mo    — supervised · unlimited · all integrations`);
+    printLine(`  autonomous  $79/mo    — full L5 · multi-agent · priority support`);
+    printLine(`  annual discount: 20% off · toggle on the pricing section`);
+    printLine(`→ scrolled to pricing`,'ok');
+  },
+  integrations(){
+    goto('integrations');
+    printLine(`<span class="ok">●</span> live: Google Calendar · Apple Calendar · Gmail · Notion · Linear · Slack · GitHub · Google Drive · Discord (beta) · Obsidian (beta)`);
+    printLine(`<span class="warn">◌</span> soon: Outlook · Todoist · GitLab · Dropbox`);
+    printLine(`→ scrolled to integrations`,'ok');
+  },
+  compare(){
+    goto('compare');
+    printLine(`<span class="amber-hl">orlix vs alternatives:</span>`);
+    printLine(`  feature              orlix   chatgpt  autogpt  notion-ai`);
+    printLine(`  persistent memory    <span class="ok">✓</span>       partial  partial  <span class="bad">✗</span>`);
+    printLine(`  policy engine        <span class="ok">✓</span>       <span class="bad">✗</span>        <span class="bad">✗</span>        <span class="bad">✗</span>`);
+    printLine(`  full audit trail     <span class="ok">✓</span>       <span class="bad">✗</span>        partial  <span class="bad">✗</span>`);
+    printLine(`  rollback any action  <span class="ok">✓</span>       <span class="bad">✗</span>        <span class="bad">✗</span>        <span class="bad">✗</span>`);
+    printLine(`  autonomy level       <span class="ok">L5</span>      L2–L3    L4       L2`);
+    printLine(`→ scrolled to compare`,'ok');
+  },
+  'use-cases'(){
+    goto('use-cases');
+    printLine(`<span class="amber-hl">use case examples:</span>`);
+    [['founder','OKR governance · goal drift alerts · weekly digest'],['engineer','PR review routing · escalation policy · commit summaries'],['creator','content calendar · publishing schedule · brief generator'],['operator','email policy · supervised send · inbox zero automation']].forEach(([r,d])=>printLine(`  <span class="hl">${r.padEnd(12,' ')}</span>${d}`));
+    printLine(`→ scrolled to use-cases`,'ok');
+  },
+  faq(){goto('faq');printLine(`→ scrolled to FAQ section`,'ok');printLine(`  click any question to expand the answer`);},
+  security(){
+    goto('security');
+    printLine(`<span class="amber-hl">security features:</span>`);
+    ['AES-256 encryption at rest','Zero-knowledge cloud sync (opt-in)','Local-first architecture','No training on your data','Open source & auditable (MIT)','SOC 2 Type II in progress · GDPR compliant'].forEach(f=>printLine(`  <span class="ok">✓</span> ${f}`));
+    printLine(`→ scrolled to security`,'ok');
+  },
+  community(){
+    goto('community');
+    printLine(`<span class="amber-hl">open source:</span>`);
+    printLine(`  license: <span class="ok">MIT</span>`);
+    printLine(`  repo: <a href="https://github.com/tylerbroqs/orlixai" target="_blank">github.com/tylerbroqs/orlixai</a>`);
+    printLine(`  stack: vanilla HTML · CSS · JS — no build step`);
+    printLine(`  run:   open index.html`);
+    printLine(`→ scrolled to community`,'ok');
+  },
+  policy(){printLine(`<span class="amber-hl">policy engine — 14 active rules</span>`);printLine(`  run <span class="hl">cat policy.txt</span> to see the list`);printLine(`  tier: <span class="warn">observe</span> (guest — policies are read-only)`);},
+  memory(a){
+    if(!a.length||a[0]==='list'){
+      printLine(`<span class="amber-hl">memory preview (guest — no persistent memory):</span>`);
+      printLine(`  goals:    0  <span class="dim">← sign up to persist</span>`);
+      printLine(`  facts:    0`);printLine(`  policies: 0 custom`);
+      printLine(`  run <span class="hl">access</span> to get an Operator account`);
+    } else printLine(`memory: unknown subcommand '${esc(a[0])}'`,'bad');
+  },
+  stats(){
+    goto('stats');
+    printLine(`<span class="amber-hl">global stats:</span>`);
+    printLine(`  early operators:   2,400+`);
+    printLine(`  policies enforced: 1.2M`);
+    printLine(`  actions audited:   340K`);
+    printLine(`  avg active rules:  14 per operator`);
+    printLine(`→ scrolled to stats`,'ok');
+  },
+  whoami(){printLine(`guest@orlix — anonymous session`);printLine(`  memory: none · policies: none · tier: observe`);printLine(`  tip: <span class="hl">./access.sh --request</span> to get early access`);},
+  uname(a){printLine(`Orlix v0.5.0-beta governance-loop/v3 ${a[0]==='-a'?'x86_64 2026-06-13 GNU/TerminalOS':'x86_64'}`);},
+  uptime(){const t=Math.floor(performance.now()/1000);printLine(`up ${Math.floor(t/60)}m ${t%60}s · load avg: 0.01 0.01 0.00`);},
+  echo(a){printLine(a.length?esc(a.join(' ')):'');},
+  ping(a){
+    const h=a[0]||'orlix';
+    if(['orlix','localhost','127.0.0.1'].includes(h)){
+      printLine(`PING ${h}: 56 data bytes`);
+      [11,12,10,11].forEach((ms,i)=>printLine(`64 bytes from ${h}: icmp_seq=${i} time=${ms} ms`,'ok'));
+      printLine(`--- ${h} ping statistics ---`);printLine(`4 packets transmitted, 4 received, 0% packet loss`);
+    } else printLine(`ping: ${esc(h)}: name or service not known`,'bad');
+  },
+  man(){
+    printLine(`ORLIX(1)             Personal AI Operating System             ORLIX(1)`);
+    printLine(`<span class="hl">NAME</span>    orlix — governance layer for personal AI`);
+    printLine(`<span class="hl">DESCRIPTION</span>`);
+    printLine(`    Observes goals, decides against policies, acts (with approval),`);
+    printLine(`    verifies outcomes, and updates policy from what happened.`);
+    printLine(`    Every step is logged as a reviewable receipt.`);
+    printLine(`<span class="hl">AUTONOMY</span>  L1 (informational) → L5 (symbiotic) — Orlix runs at L5`);
+    printLine(`<span class="hl">SEE ALSO</span>  levels(1), receipt.log(5), access.sh(1)`);
+  },
+  access(){goto('access');printLine(`→ scrolled to early access form`,'ok');},
+  clear(){termBody.innerHTML='';},
+  sudo(){printLine(`Nice try. Guest sessions run at tier: <span class="hl">observe</span>.`,'warn');printLine(`Elevation requires a signed policy token. Run <span class="hl">access</span> to get one.`);},
+  exit(){printLine(`logout — session persists until browser is closed.`,'dim');},
+  quit(){cmds.exit();},
+};
 
-  document.querySelectorAll('section.fade-in').forEach((sec) => observer.observe(sec));
+function run(raw){
+  const t=raw.trim();if(!t)return;
+  HIST.unshift(t);histIdx=-1;printPrompt(t);
+  const parts=t.split(/\s+/);const cmd=parts[0].toLowerCase();const args=parts.slice(1);
+  // handle "use cases" (two words) and "man orlix"
+  const full=t.toLowerCase();
+  if(full==='use cases'||full==='use-cases'){cmds['use-cases']();return;}
+  if(cmds[cmd])cmds[cmd](args);
+  else printLine(`command not found: <span class="bad">${esc(cmd)}</span> — type <span class="hl">help</span>`,'bad');
+}
 
-  /* ====================================================
-     BACK TO TOP
-     ==================================================== */
-  const backTop = document.getElementById('backTop');
-  window.addEventListener('scroll', () => {
-    backTop.classList.toggle('show', window.scrollY > 500);
-  }, { passive: true });
-  backTop.addEventListener('click', () => gotoSection('top'));
+termInput.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){run(termInput.value);termInput.value='';}
+  else if(e.key==='ArrowUp'){e.preventDefault();if(histIdx<HIST.length-1){histIdx++;termInput.value=HIST[histIdx]||'';}}
+  else if(e.key==='ArrowDown'){e.preventDefault();histIdx>0?(histIdx--,termInput.value=HIST[histIdx]||''):(histIdx=-1,termInput.value='');}
+  else if(e.key==='Tab'){
+    e.preventDefault();const v=termInput.value.trim().toLowerCase();
+    const m=Object.keys(cmds).filter(c=>c.startsWith(v));
+    if(m.length===1)termInput.value=m[0]+' ';
+    else if(m.length>1){printPrompt(v);printLine(m.join('  '));}
+  }
+});
+document.getElementById('termSendBtn').addEventListener('click',()=>{run(termInput.value);termInput.value='';termInput.focus();});
+termBody.addEventListener('click',()=>termInput.focus());
+document.getElementById('focusTermBtn').addEventListener('click',()=>{document.querySelector('.terminal').scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>termInput.focus(),400);});
+
+/* ── GLOBAL CLICK ROUTING ── */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-goto]');if(!b)return;
+  e.preventDefault();goto(b.getAttribute('data-goto'));
+  if(b.getAttribute('data-action')==='clear-term')termBody.innerHTML='';
+});
+document.querySelectorAll('[data-action="clear-term"]').forEach(b=>b.addEventListener('click',()=>termBody.innerHTML=''));
+document.getElementById('navAccess').addEventListener('click',()=>goto('access'));
+
+/* ── PRICING TOGGLE ── */
+let annual=false;
+function updatePricing(){
+  document.querySelectorAll('.plan-price[data-monthly]').forEach(el=>{
+    el.innerHTML=(annual?el.dataset.annual:el.dataset.monthly)+'<sub>/mo</sub>';
+  });
+  const oo=document.getElementById('orig-operator');
+  const oa=document.getElementById('orig-autonomous');
+  if(annual){oo.textContent='$29/mo';oa.textContent='$79/mo';}
+  else{oo.innerHTML='&nbsp;';oa.innerHTML='&nbsp;';}
+  document.getElementById('saveBadge').style.display=annual?'inline':'none';
+  document.getElementById('toggleMonthly').classList.toggle('active',!annual);
+  document.getElementById('toggleAnnual').classList.toggle('active',annual);
+}
+document.getElementById('toggleMonthly').addEventListener('click',()=>{annual=false;updatePricing();});
+document.getElementById('toggleAnnual').addEventListener('click',()=>{annual=true;updatePricing();});
+
+/* ── FAQ ACCORDION ── */
+document.querySelectorAll('.faq-q').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const item=btn.parentElement;const wasOpen=item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(i=>i.classList.remove('open'));
+    if(!wasOpen)item.classList.add('open');
+  });
+});
+
+/* ── STATS COUNTER ANIMATION ── */
+function animateCounter(el){
+  const fmt=el.dataset.fmt;const suffix=el.dataset.suffix||'';
+  const target=parseInt(el.dataset.count,10);
+  if(fmt){el.textContent=fmt;return;}
+  const dur=1200;const start=performance.now();
+  function tick(now){
+    const p=Math.min((now-start)/dur,1);
+    const val=Math.floor(p*p*(3-2*p)*target);
+    el.textContent=(val>=1000?val>=1000000?(val/1000000).toFixed(1)+'M':(val/1000).toFixed(0)+'K':val)+suffix;
+    if(p<1)requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ── SCROLL ANIMATIONS ── */
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(entry=>{
+    if(!entry.isIntersecting)return;
+    entry.target.classList.add('visible');
+    entry.target.querySelectorAll('[data-count]').forEach(animateCounter);
+    io.unobserve(entry.target);
+  });
+},{threshold:.06,rootMargin:'0px 0px -30px 0px'});
+document.querySelectorAll('.fade-in').forEach(s=>io.observe(s));
+
+/* ── DOWNLOAD EXPORT ── */
+document.getElementById('downloadExport').addEventListener('click',()=>{
+  const data={schema:'orlix/v1',exported_at:new Date().toISOString(),
+    goals:[{name:'Ship MVP',deadline:'2026-07-15',progress:0.6}],
+    policies:[{rule:'notify_if_blocker_gt_48h',version:14,status:'active'}],
+    facts:[{content:'Alex owns the design review',source:'email · 2026-06-02',confidence:0.95}]};
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+  a.download='orlix-export.json';document.body.appendChild(a);a.click();document.body.removeChild(a);
+});
+
+/* ── ACCESS FORM ── */
+document.getElementById('accessForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const email=document.getElementById('accessEmail').value.trim();
+  const role=document.getElementById('accessRole').value;
+  const plan=document.getElementById('accessPlan').value;
+  const use=document.getElementById('accessUse').value.trim();
+  const result=document.getElementById('accessResult');
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){result.innerHTML=`<span class="bad">error: invalid email address</span>`;return;}
+  result.innerHTML=`<span class="ok">✓ request queued — ${esc(email)} (${esc(role)} · ${esc(plan)}${use?' · '+esc(use):''}).<br>  we'll reach out when your cohort opens. no spam, ever.</span>`;
+  const btn=e.target.querySelector('button[type=submit]');btn.disabled=true;btn.style.opacity='.5';
+});
+
+/* ── BACK TO TOP ── */
+const backTop=document.getElementById('backTop');
+window.addEventListener('scroll',()=>backTop.classList.toggle('show',scrollY>500),{passive:true});
+backTop.addEventListener('click',()=>goto('top'));
 
 })();
 </script>
