@@ -1,0 +1,16 @@
+services:
+  orlix:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: orlix
+    restart: unless-stopped
+    volumes:
+      - orlix_data:/home/orlix/.orlix
+    environment:
+      - NODE_ENV=production
+    command: ["run", "--interval", "60"]
+
+volumes:
+  orlix_data:
+    name: orlix_data
