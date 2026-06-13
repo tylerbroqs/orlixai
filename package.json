@@ -9,52 +9,75 @@
     "orlix": "./dist/bin/orlix.js"
   },
   "scripts": {
-    "dev":        "vite",
-    "build":      "tsc -p tsconfig.json && vite build",
-    "build:cli":  "tsc -p tsconfig.node.json",
-    "typecheck":  "tsc --noEmit",
-    "test":       "vitest run",
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json && vite build",
+    "build:cli": "tsc -p tsconfig.node.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "lint":       "eslint src/ bin/ tests/",
-    "lint:fix":   "eslint src/ bin/ tests/ --fix",
-    "format":     "prettier --write .",
-    "format:check":"prettier --check .",
-    "prepare":    "husky",
-    "start":      "node dist/bin/orlix.js",
-    "example":    "node --loader ts-node/esm examples/basic-workflow.ts",
-    "clean":      "rimraf dist"
+    "lint": "eslint src/ bin/ tests/",
+    "lint:fix": "eslint src/ bin/ tests/ --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky",
+    "start": "node dist/bin/orlix.js",
+    "example": "tsx examples/basic-workflow.ts",
+    "clean": "rimraf dist"
   },
   "keywords": [
-    "ai", "governance", "agent", "memory", "policy",
-    "automation", "personal-ai", "llm", "audit", "workflow"
+    "ai",
+    "governance",
+    "agent",
+    "memory",
+    "policy",
+    "automation",
+    "personal-ai",
+    "llm",
+    "audit",
+    "workflow"
   ],
   "author": "Orlix Contributors",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url":  "https://github.com/tylerbroqs/orlixai.git"
+    "url": "https://github.com/tylerbroqs/orlixai.git"
   },
-  "homepage":  "https://orlixai.xyz",
-  "bugs": { "url": "https://github.com/tylerbroqs/orlixai/issues" },
-  "engines": { "node": ">=18.0.0" },
+  "homepage": "https://orlixai.xyz",
+  "bugs": {
+    "url": "https://github.com/tylerbroqs/orlixai/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{js,json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
   "dependencies": {
     "chalk": "^5.3.0"
   },
   "devDependencies": {
-    "@commitlint/cli":             "^19.3.0",
+    "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
-    "@types/node":                 "^20.14.0",
-    "@typescript-eslint/eslint-plugin": "^7.13.0",
-    "@typescript-eslint/parser":   "^7.13.0",
-    "@vitest/coverage-v8":         "^1.6.0",
-    "eslint":                      "^9.5.0",
-    "husky":                       "^9.0.11",
-    "prettier":                    "^3.3.2",
-    "rimraf":                      "^5.0.7",
-    "ts-node":                     "^10.9.2",
-    "typescript":                  "^5.4.5",
-    "vite":                        "^5.3.1",
-    "vitest":                      "^1.6.0"
+    "@types/node": "^20.14.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "@vitest/coverage-v8": "^1.6.0",
+    "eslint": "^9.5.0",
+    "husky": "^9.0.11",
+    "prettier": "^3.3.2",
+    "rimraf": "^5.0.7",
+    "tsx": "^4.15.0",
+    "lint-staged": "^15.2.7",
+    "typescript-eslint": "^8.0.0",
+    "typescript": "^5.5.0",
+    "vite": "^5.3.1",
+    "vitest": "^1.6.0"
   }
 }
