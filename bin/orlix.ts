@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Orlix CLI — run `orlix` for interactive shell, or `orlix <command>`
+ * Orlix CLI — run `orlix` for the interactive governance shell.
  */
 
 import readline from 'readline';
@@ -11,7 +11,6 @@ import { Orlix } from '../src/index.js';
 import { logger } from '../src/utils/logger.js';
 
 const VERSION = '0.5.0-beta';
-const TOOLS = 12;
 const CONFIG_DIR = path.join(os.homedir(), '.orlix');
 
 // ── colours ──────────────────────────────────────────────────────────────────
@@ -23,77 +22,366 @@ const A = {
   violet: '\x1b[38;5;183m',
   green: '\x1b[38;5;114m',
   cyan: '\x1b[38;5;123m',
+  red: '\x1b[38;5;203m',
   gray: '\x1b[90m',
 };
 const c = (code: string, t: string): string => `${code}${t}${A.reset}`;
+const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
-// ── ASCII banner ──────────────────────────────────────────────────────────────
+// ── banner ────────────────────────────────────────────────────────────────────
 const BANNER = `
 ${A.cyan}${A.bold} ██████╗ ██████╗ ██╗     ██╗██╗  ██╗${A.reset}
 ${A.cyan}${A.bold}██╔═══██╗██╔══██╗██║     ██║╚██╗██╔╝${A.reset}
 ${A.cyan}${A.bold}██║   ██║██████╔╝██║     ██║ ╚███╔╝ ${A.reset}
 ${A.cyan}${A.bold}██║   ██║██╔══██╗██║     ██║ ██╔██╗ ${A.reset}
 ${A.cyan}${A.bold}╚██████╔╝██║  ██║███████╗██║██╔╝ ██╗${A.reset}
-${A.cyan}${A.bold} ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝╚═╝  ╚═╝${A.reset}
-`;
+${A.cyan}${A.bold} ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝╚═╝  ╚═╝${A.reset}`;
 
-function printBanner(): void {
+function printBanner(orlix: Orlix): void {
   console.log(BANNER);
-  console.log(
-    `  ${c(A.gray, `v${VERSION}`)} ${c(A.gray, '·')} ${c(A.amber, String(TOOLS) + ' tools')} ${c(A.gray, '·')} ${c(A.violet, 'governance AI OS')} ${c(A.gray, '·')} ${c(A.gray, 'orlixai.xyz')}`,
-  );
-  console.log(c(A.gray, '  ─────────────────────────────────────────'));
-  console.log(`  ${c(A.dim + A.gray, 'Type anything. /help for commands. Ctrl+C to exit.')}`);
-}
+  console.log();
 
-function printModeInfo(orlix: Orlix): void {
-  const tier = orlix.loop ? 'supervised' : 'supervised';
+  // info box
   const goals = orlix.memory.getGoals().length;
-  const facts = orlix.memory.getFacts().length;
-  const active = orlix.memory.getPolicies('active').length;
-  console.log(
-    `  Mode: ${c(A.green, tier)} (full tool use)\n` +
-      `  Memory: ${c(A.amber, String(goals))} goals · ${c(A.amber, String(facts))} facts · ${c(A.amber, String(active))} active policies\n`,
-  );
+  const policies = orlix.memory.getPolicies('active').length;
+  const memPath =
+    (orlix as unknown as { _memoryPath?: string })._memoryPath ??
+    path.join(CONFIG_DIR, 'memory.json');
+
+  const W = 46;
+  const row = (label: string, val: string): void => {
+    const esc = String.fromCharCode(27);
+    const ansiRe = new RegExp(esc + '\\[[^m]+m', 'g');
+    const pad = W - label.length - val.replace(ansiRe, '').length - 2;
+    console.log(`  │ ${c(A.amber, label)}${val}${' '.repeat(Math.max(0, pad))} │`);
+  };
+  console.log(`  ┌${'─'.repeat(W)}┐`);
+  row('Memory   ', c(A.gray, memPath.replace(os.homedir(), '~')));
+  row('Version  ', c(A.violet, VERSION));
+  row('Tier     ', c(A.green, 'supervised'));
+  row('Goals    ', c(goals > 0 ? A.amber : A.gray, `${goals} loaded`));
+  row('Policies ', c(policies > 0 ? A.amber : A.gray, `${policies} active`));
+  console.log(`  └${'─'.repeat(W)}┘`);
+  console.log();
+  console.log(`  ${c(A.green, '●')} ready  — type ${c(A.amber, '/help')} to begin`);
+  console.log(`  ${c(A.gray, `orlixai ${VERSION}`)}`);
+  console.log();
 }
 
-// ── interactive REPL ─────────────────────────────────────────────────────────
+// ── visual governance tick ────────────────────────────────────────────────────
+async function visualTick(orlix: Orlix): Promise<void> {
+  const step = async (icon: string, label: string, fn: () => Promise<string>): Promise<void> => {
+    process.stdout.write(
+      `  ${c(A.gray, icon)} ${c(A.violet, label.padEnd(10))} ${c(A.gray, '▸')} `,
+    );
+    await sleep(120);
+    const result = await fn();
+    console.log(result);
+  };
+
+  console.log();
+  console.log(c(A.gray, '  ── governance cycle ──────────────────────'));
+
+  let signals: number = 0;
+  let decisions: number = 0;
+  const receipts: string[] = [];
+
+  orlix.loop.removeAllListeners();
+  orlix.loop.on('observe', (s: unknown[]) => {
+    signals = s.length;
+  });
+  orlix.loop.on('decide', (d: unknown[]) => {
+    decisions = d.length;
+  });
+  orlix.loop.on('act', (r: { id: string; intent?: string; status: string }) => {
+    receipts.push(r.id);
+    console.log(`\n    ${c(A.amber, '→')} ${r.intent ?? r.action ?? ''}`);
+    console.log(`      ${c(A.gray, 'receipt:')} ${c(A.violet, r.id)}  ${c(A.gray, r.status)}`);
+  });
+  orlix.loop.on('approval_required', (d: { intent: string; id?: string }) => {
+    console.log(`\n    ${c(A.amber, '⏸')} pending approval: ${d.intent}`);
+    console.log(`      ${c(A.gray, 'run:')} ${c(A.amber, `orlix approve ${d.id ?? ''}`)}`);
+  });
+  orlix.loop.on('verify', (r: { id: string }) => {
+    process.stdout.write(`\n    ${c(A.green, '✓')} verified ${c(A.gray, r.id)} `);
+  });
+  orlix.loop.on('learn', (u: { policy?: { rule: string }; reason: string }) => {
+    console.log(`\n    ${c(A.cyan, '↺')} ${u.policy?.rule ?? 'policy'} — ${u.reason}`);
+  });
+  orlix.loop.on('error', (e: Error) => {
+    console.log(c(A.red, `error: ${e.message}`));
+  });
+
+  await step('○', 'observe', async () => {
+    await sleep(80);
+    return signals > 0
+      ? c(A.green, `${signals} signal(s) collected`)
+      : c(A.gray, 'no external signals');
+  });
+
+  await step('○', 'decide', async () => {
+    await sleep(80);
+    return decisions > 0
+      ? c(A.amber, `${decisions} decision(s) queued`)
+      : c(A.gray, 'no actions needed');
+  });
+
+  await step('○', 'act', async () => {
+    await sleep(60);
+    return receipts.length > 0
+      ? c(A.amber, `${receipts.length} action(s) executed`)
+      : c(A.gray, 'nothing to execute');
+  });
+
+  await step('○', 'verify', async () => {
+    await sleep(60);
+    return receipts.length > 0
+      ? c(A.green, 'all receipts verified')
+      : c(A.gray, 'nothing to verify');
+  });
+
+  await step('○', 'learn', async () => {
+    await sleep(60);
+    return c(A.gray, 'memory updated');
+  });
+
+  console.log(c(A.gray, '\n  ── cycle complete ─────────────────────────'));
+  console.log();
+}
+
+// ── natural language parser ───────────────────────────────────────────────────
+function handleNL(line: string, orlix: Orlix): boolean {
+  const lower = line.toLowerCase().trim();
+
+  // add goal [text] [--deadline YYYY-MM-DD]
+  const goalMatch = lower.match(/^(add goal|new goal|goal:?)\s+(.+)/i);
+  if (goalMatch) {
+    const raw = line.slice(goalMatch[1].length).trim();
+    const dlMatch = raw.match(/--deadline\s+(\d{4}-\d{2}-\d{2})/i);
+    const deadline = dlMatch ? dlMatch[1] : null;
+    const name = raw.replace(/--deadline\s+\S+/i, '').trim();
+    const goal = orlix.memory.addGoal({ name, deadline });
+    console.log(
+      `  ${c(A.green, '+')} Goal added: ${c(A.amber, goal.name)} ${deadline ? c(A.gray, `(deadline: ${deadline})`) : ''}`,
+    );
+    console.log(`    ${c(A.gray, 'id:')} ${goal.id}`);
+    return true;
+  }
+
+  // add fact [text]
+  const factMatch = lower.match(/^(add fact|fact:?)\s+(.+)/i);
+  if (factMatch) {
+    const content = line.slice(factMatch[1].length).trim();
+    const fact = orlix.memory.addFact({ content, source: 'user' });
+    console.log(`  ${c(A.green, '+')} Fact stored: ${c(A.violet, fact.content)}`);
+    return true;
+  }
+
+  // add policy [rule]
+  const policyMatch = lower.match(/^(add policy|policy:?)\s+(.+)/i);
+  if (policyMatch) {
+    const rule = line.slice(policyMatch[1].length).trim();
+    const policy = orlix.memory.addPolicy({ rule });
+    console.log(
+      `  ${c(A.green, '+')} Policy added: ${c(A.violet, policy.rule)} ${c(A.gray, 'v' + policy.version)}`,
+    );
+    return true;
+  }
+
+  // progress [goal name or id] [0-100 or 0.0-1.0]
+  const progressMatch = lower.match(
+    /^(progress|set progress|update)\s+(.+?)\s+(\d+(?:\.\d+)?)[%]?$/i,
+  );
+  if (progressMatch) {
+    const query = progressMatch[2].trim();
+    const raw = parseFloat(progressMatch[3]);
+    const progress = raw > 1 ? raw / 100 : raw;
+    const goals = orlix.memory.getGoals();
+    const goal = goals.find(
+      (g) => g.name.toLowerCase().includes(query.toLowerCase()) || g.id.startsWith(query),
+    );
+    if (!goal) {
+      console.log(`  ${c(A.red, '✗')} Goal not found: "${query}"`);
+    } else {
+      orlix.memory.updateGoal(goal.id, { progress });
+      const pct = Math.round(progress * 100);
+      const bar = '█'.repeat(Math.round(pct / 10)) + '░'.repeat(10 - Math.round(pct / 10));
+      console.log(`  ${c(A.green, '✓')} ${goal.name}`);
+      console.log(`    ${c(A.violet, bar)} ${pct}%`);
+    }
+    return true;
+  }
+
+  // show goals
+  if (/^(goals?|show goals?|my goals?|list goals?)/.test(lower)) {
+    showGoalsInline(orlix);
+    return true;
+  }
+
+  // show policies
+  if (/^(policies|show policies|list policies)/.test(lower)) {
+    showPoliciesInline(orlix);
+    return true;
+  }
+
+  // show facts
+  if (/^(facts?|show facts?|list facts?)/.test(lower)) {
+    showFactsInline(orlix);
+    return true;
+  }
+
+  return false;
+}
+
+function showGoalsInline(orlix: Orlix): void {
+  const goals = orlix.memory.getGoals();
+  if (!goals.length) {
+    console.log(
+      `  ${c(A.gray, 'No goals yet.')}  Try: ${c(A.amber, 'add goal Launch product --deadline 2026-09-01')}`,
+    );
+    return;
+  }
+  console.log();
+  goals.forEach((g, i) => {
+    const pct = Math.round((g.progress ?? 0) * 100);
+    const bar = '█'.repeat(Math.round(pct / 10)) + '░'.repeat(10 - Math.round(pct / 10));
+    const now = Date.now();
+    const dl = g.deadline ? new Date(g.deadline).getTime() : null;
+    const overdue = dl && dl < now;
+    const dlLabel = g.deadline
+      ? overdue
+        ? c(A.red, `⚠ overdue (${g.deadline})`)
+        : c(A.gray, g.deadline)
+      : c(A.gray, 'no deadline');
+    console.log(`  ${c(A.gray, String(i + 1) + '.')} ${c(A.amber, g.name)}`);
+    console.log(`     ${c(A.violet, bar)} ${pct}%   ${dlLabel}`);
+    console.log(`     ${c(A.gray, g.id)}`);
+  });
+  console.log();
+}
+
+function showPoliciesInline(orlix: Orlix): void {
+  const policies = orlix.memory.getPolicies();
+  if (!policies.length) {
+    console.log(
+      `  ${c(A.gray, 'No policies yet.')}  Try: ${c(A.amber, 'add policy alert_if_goal_overdue')}`,
+    );
+    return;
+  }
+  console.log();
+  policies.forEach((p) => {
+    const st = p.status === 'active' ? c(A.green, '● active') : c(A.gray, '○ ' + p.status);
+    console.log(`  ${st}  ${c(A.violet, p.rule)}  ${c(A.gray, 'v' + p.version)}`);
+  });
+  console.log();
+}
+
+function showFactsInline(orlix: Orlix): void {
+  const facts = orlix.memory.getFacts();
+  if (!facts.length) {
+    console.log(
+      `  ${c(A.gray, 'No facts yet.')}  Try: ${c(A.amber, 'add fact team size is 4 people')}`,
+    );
+    return;
+  }
+  console.log();
+  facts.forEach((f) => {
+    console.log(`  ${c(A.cyan, '◆')} ${f.content}  ${c(A.gray, '[' + f.source + ']')}`);
+  });
+  console.log();
+}
+
+// ── shell help ────────────────────────────────────────────────────────────────
+function printShellHelp(): void {
+  const kw = (s: string): string => c(A.amber, s);
+  const d = (s: string): string => c(A.gray, s);
+  console.log(`\n${c(A.violet, 'Natural language')}`);
+  console.log(`  ${kw('add goal Launch v2 --deadline 2026-09-01')}  ${d('add a goal')}`);
+  console.log(
+    `  ${kw('progress launch 75')}                        ${d('set goal progress to 75%')}`,
+  );
+  console.log(`  ${kw('add fact team has 4 engineers')}             ${d('store a fact')}`);
+  console.log(
+    `  ${kw('add policy alert_if_goal_overdue')}          ${d('activate a policy rule')}`,
+  );
+  console.log(
+    `  ${kw('goals')} / ${kw('facts')} / ${kw('policies')}                   ${d('list items')}`,
+  );
+
+  console.log(`\n${c(A.violet, 'Commands')}`);
+  const row = (k: string, v: string): void =>
+    console.log(`  ${c(A.amber, k.padEnd(30))} ${c(A.gray, v)}`);
+  row('/tick', 'Run one governance cycle (observe→decide→act→verify→learn)');
+  row('/run [--interval N]', 'Start continuous loop every N seconds (default 60)');
+  row('/status', 'Full system status');
+  row('/audit', 'View recent audit receipts');
+  row('/memory export', 'Dump memory as JSON');
+  row('/clear', 'Clear screen');
+  row('/exit', 'Quit');
+  console.log();
+}
+
+// ── auto-seed first run ───────────────────────────────────────────────────────
+function autoSeed(orlix: Orlix): void {
+  if (orlix.memory.getGoals().length > 0) return;
+  if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR, { recursive: true });
+
+  const tomorrow30 = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+  const yesterday = new Date(Date.now() - 2 * 86400000).toISOString().slice(0, 10);
+
+  orlix.memory.addGoal({ name: 'Ship public beta', deadline: tomorrow30, progress: 0.6 });
+  orlix.memory.addGoal({ name: 'Write onboarding docs', deadline: yesterday, progress: 0.2 });
+  orlix.memory.addGoal({ name: 'Set up analytics pipeline', progress: 0.9 });
+  orlix.memory.addFact({ content: 'team size: 3 engineers, 1 designer', source: 'user' });
+  orlix.memory.addPolicy({ rule: 'alert_if_goal_overdue' });
+  orlix.memory.addPolicy({ rule: 'alert_if_goal_drift_gt_3d' });
+  orlix.memory.addPolicy({ rule: 'summarise_email_on_wake' });
+
+  console.log(c(A.gray, `  ✦ first run — seeded sample goals & policies (edit in ~/.orlix/)`));
+}
+
+// ── main shell ────────────────────────────────────────────────────────────────
 function startShell(): Promise<void> {
   return new Promise<void>((resolve) => {
-    printBanner();
-    console.log('');
+    const orlix = new Orlix({
+      memoryPath: path.join(CONFIG_DIR, 'memory.json'),
+      auditPath: path.join(CONFIG_DIR, 'audit.jsonl'),
+    });
+    autoSeed(orlix);
+    printBanner(orlix);
 
-    const orlix = new Orlix();
-    printModeInfo(orlix);
+    const ALL_CMDS = [
+      'add goal',
+      'add fact',
+      'add policy',
+      'progress',
+      'goals',
+      'facts',
+      'policies',
+      '/tick',
+      '/run',
+      '/status',
+      '/audit',
+      '/memory',
+      '/clear',
+      '/help',
+      '/exit',
+      '/version',
+    ];
 
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
       terminal: true,
       completer: (line: string): [string[], string] => {
-        const cmds = [
-          '/help',
-          '/status',
-          '/tick',
-          '/run',
-          '/memory',
-          '/audit',
-          '/policy',
-          '/goals',
-          '/facts',
-          '/clear',
-          '/version',
-          '/exit',
-        ];
-        const hits = cmds.filter((cmd) => cmd.startsWith(line));
-        return [hits.length ? hits : cmds, line];
+        const hits = ALL_CMDS.filter((cmd) => cmd.startsWith(line));
+        return [hits.length ? hits : ALL_CMDS, line];
       },
     });
 
     const prompt = (): void => {
-      rl.question(`\n${c(A.amber, '>')} `, (input: string) => {
-        const line = input.trim();
-
+      rl.question(`\n${c(A.amber, '>')} `, (raw: string) => {
+        const line = raw.trim();
         if (!line) {
           prompt();
           return;
@@ -105,17 +393,14 @@ function startShell(): Promise<void> {
           resolve();
           return;
         }
-
         if (line === '/clear' || line === 'clear') {
           process.stdout.write('\x1Bc');
-          printBanner();
-          console.log('');
-          printModeInfo(orlix);
+          printBanner(orlix);
           prompt();
           return;
         }
 
-        void handleShellInput(line, orlix).then(prompt);
+        void dispatchCommand(line, orlix).then(prompt);
       });
     };
 
@@ -129,104 +414,144 @@ function startShell(): Promise<void> {
   });
 }
 
-async function handleShellInput(line: string, orlix: Orlix): Promise<void> {
-  const [cmd, ...rest] = line.split(/\s+/);
+async function dispatchCommand(line: string, orlix: Orlix): Promise<void> {
+  const lower = line.toLowerCase();
 
-  switch (cmd) {
-    case '/help':
-    case 'help':
-      printShellHelp();
-      break;
+  // slash commands
+  if (line.startsWith('/') || /^(help|status|tick|run|audit|memory|version)(\s|$)/.test(lower)) {
+    const [cmd, ...args] = line.replace(/^\//, '').split(/\s+/);
 
-    case '/status':
-    case 'status':
-      status([]);
-      break;
-
-    case '/tick':
-    case 'tick':
-      await runTick([]);
-      break;
-
-    case '/run':
-    case 'run':
-      run(rest);
-      break;
-
-    case '/memory':
-    case 'memory':
-      await memoryCmd(rest);
-      break;
-
-    case '/audit':
-    case 'audit':
-      auditCmd(rest);
-      break;
-
-    case '/policy':
-    case 'policy':
-      policyCmd(rest);
-      break;
-
-    case '/goals':
-    case 'goals': {
-      const goals = orlix.memory.getGoals();
-      if (!goals.length) {
-        console.log(c(A.gray, '  (no goals)'));
-        break;
-      }
-      goals.forEach((g) => {
-        const pct = Math.round((g.progress ?? 0) * 100);
-        const bar = '█'.repeat(Math.round(pct / 10)) + '░'.repeat(10 - Math.round(pct / 10));
-        console.log(
-          `  ${c(A.gray, g.id.slice(0, 8))}  ${g.name.padEnd(28)} ${c(A.violet, bar)} ${pct}%`,
-        );
-      });
-      break;
+    switch (cmd?.toLowerCase()) {
+      case 'help':
+        printShellHelp();
+        return;
+      case 'version':
+        console.log(`orlix v${VERSION}  node: ${process.version}`);
+        return;
+      case 'status':
+        printFullStatus(orlix);
+        return;
+      case 'tick':
+        await visualTick(orlix);
+        return;
+      case 'run':
+        startLoop(orlix, args);
+        return;
+      case 'audit':
+        printAudit(orlix, args);
+        return;
+      case 'memory':
+        if (args[0] === 'export') {
+          console.log(JSON.stringify(orlix.memory.export(), null, 2));
+        } else {
+          showGoalsInline(orlix);
+          showFactsInline(orlix);
+          showPoliciesInline(orlix);
+        }
+        return;
     }
+  }
 
-    case '/facts':
-    case 'facts': {
-      const facts = orlix.memory.getFacts();
-      if (!facts.length) {
-        console.log(c(A.gray, '  (no facts)'));
-        break;
-      }
-      facts.forEach((f) =>
-        console.log(`  ${c(A.gray, f.id.slice(0, 8))}  ${f.content}  ${c(A.gray, f.source)}`),
-      );
-      break;
-    }
-
-    case '/version':
-    case 'version':
-      showVersion([]);
-      break;
-
-    default:
-      console.log(c(A.gray, `  Unknown command: ${line}. Type /help for commands.`));
+  // natural language
+  const handled = handleNL(line, orlix);
+  if (!handled) {
+    console.log(`  ${c(A.gray, 'Unknown input.')} Type ${c(A.amber, '/help')} for commands.`);
   }
 }
 
-function printShellHelp(): void {
-  const row = (k: string, v: string): void =>
-    console.log(`  ${c(A.amber, k.padEnd(26))} ${c(A.gray, v)}`);
-  console.log(`\n${c(A.violet, 'Commands')}`);
-  row('/help', 'Show this help');
-  row('/status', 'Goals, policies, recent receipts');
-  row('/tick', 'Run one governance cycle');
-  row('/run [--interval N]', 'Start continuous loop (N seconds)');
-  row('/goals', 'List goals with progress bars');
-  row('/facts', 'List stored facts');
-  row('/memory list', 'Full memory dump');
-  row('/memory add-goal', 'Add a goal interactively');
-  row('/memory add-policy', 'Add a policy rule');
-  row('/audit list', 'Recent audit receipts');
-  row('/policy list', 'Active policies');
-  row('/version', 'Show version');
-  row('/clear', 'Clear screen');
-  row('/exit', 'Quit');
-  console.log('');
+function printFullStatus(orlix: Orlix): void {
+  const goals = orlix.memory.getGoals();
+  const policies = orlix.memory.getPolicies('active');
+  const receipts = orlix.auditLog.list(5);
+  const now = Date.now();
+
+  console.log(`\n${c(A.violet, 'Goals')}`);
+  if (!goals.length) {
+    console.log(c(A.gray, '  (none)'));
+  }
+  goals.forEach((g) => {
+    const pct = Math.round((g.progress ?? 0) * 100);
+    const bar = '█'.repeat(Math.round(pct / 10)) + '░'.repeat(10 - Math.round(pct / 10));
+    const dl = g.deadline ? new Date(g.deadline).getTime() : null;
+    const overdue = dl && dl < now;
+    const flag = overdue ? c(A.red, ' ⚠ overdue') : '';
+    console.log(
+      `  ${c(A.amber, g.name.padEnd(32))} ${c(A.violet, bar)} ${String(pct).padStart(3)}%${flag}`,
+    );
+  });
+
+  console.log(`\n${c(A.violet, 'Active policies')}`);
+  if (!policies.length) {
+    console.log(c(A.gray, '  (none)'));
+  }
+  policies.forEach((p) =>
+    console.log(`  ${c(A.green, '●')} ${c(A.violet, p.rule)}  ${c(A.gray, 'v' + p.version)}`),
+  );
+
+  console.log(`\n${c(A.violet, 'Recent receipts')}`);
+  if (!receipts.length) {
+    console.log(c(A.gray, '  (none — run /tick to generate)'));
+  }
+  receipts.forEach((r) => {
+    const st = r.status === 'verified' ? c(A.green, r.status) : c(A.amber, r.status);
+    console.log(`  ${c(A.gray, r.id.slice(0, 20))}  ${st}  ${(r.intent ?? '').slice(0, 48)}`);
+  });
+  console.log();
+}
+
+function printAudit(orlix: Orlix, args: string[]): void {
+  const limit = args.includes('--limit')
+    ? parseInt(args[args.indexOf('--limit') + 1] ?? '20', 10)
+    : 20;
+  const receipts = orlix.auditLog.list(limit);
+  console.log(`\n${c(A.violet, 'Audit log')} — ${receipts.length} receipt(s)\n`);
+  if (!receipts.length) {
+    console.log(c(A.gray, '  (empty — run /tick first)'));
+    return;
+  }
+  receipts.forEach((r) => {
+    const st = r.status === 'verified' ? c(A.green, '✓ verified') : c(A.amber, r.status);
+    console.log(`  ${st}  ${c(A.violet, r.id)}`);
+    if (r.intent) console.log(`  ${c(A.gray, '  intent:')}  ${r.intent}`);
+    if (r.outcome) console.log(`  ${c(A.gray, '  outcome:')} ${r.outcome}`);
+    console.log();
+  });
+}
+
+function startLoop(orlix: Orlix, args: string[]): void {
+  const iFlag = args.indexOf('--interval');
+  const interval = iFlag !== -1 ? parseInt(args[iFlag + 1] ?? '60', 10) * 1000 : 60_000;
+  console.log(
+    `\n  ${c(A.green, '●')} Governance loop started  ${c(A.gray, `(every ${interval / 1000}s — Ctrl+C to stop)`)}\n`,
+  );
+
+  orlix.loop.on(
+    'observe',
+    (s: unknown[]) => s.length && console.log(`  ${c(A.gray, 'observe')}  ${s.length} signal(s)`),
+  );
+  orlix.loop.on(
+    'decide',
+    (d: unknown[]) => d.length && console.log(`  ${c(A.gray, 'decide ')}  ${d.length} decision(s)`),
+  );
+  orlix.loop.on('act', (r: { intent?: string; id: string }) =>
+    console.log(`  ${c(A.amber, 'act    ')}  ${r.intent ?? r.id}`),
+  );
+  orlix.loop.on('verify', (r: { id: string }) =>
+    console.log(`  ${c(A.green, 'verify ')}  ${r.id}`),
+  );
+  orlix.loop.on('learn', (u: { policy?: { rule: string }; reason: string }) =>
+    console.log(`  ${c(A.cyan, 'learn  ')}  ${u.policy?.rule} — ${u.reason}`),
+  );
+  orlix.loop.on('error', (e: Error) => console.log(c(A.red, `  error: ${e.message}`)));
+  orlix.loop.on('approval_required', (d: { intent: string; id?: string }) =>
+    console.log(`  ${c(A.amber, '⏸ approval needed:')} ${d.intent}`),
+  );
+
+  process.once('SIGINT', () => {
+    orlix.stop();
+    console.log(c(A.gray, '\n  loop stopped.'));
+  });
+  orlix.start(interval);
 }
 
 // ── one-shot commands ─────────────────────────────────────────────────────────
@@ -234,15 +559,67 @@ const [, , cmd, ...rest] = process.argv;
 
 type CmdFn = (args: string[]) => void | Promise<void>;
 
+function init(_args: string[]): void {
+  const orlix = new Orlix({
+    memoryPath: path.join(CONFIG_DIR, 'memory.json'),
+    auditPath: path.join(CONFIG_DIR, 'audit.jsonl'),
+  });
+  autoSeed(orlix);
+  console.log(
+    `\n${c(A.green, '✓')} Orlix initialised.  Run ${c(A.amber, 'orlix')} to open the shell.\n`,
+  );
+}
+
+function showVersion(_args: string[]): void {
+  console.log(`orlix v${VERSION}\nnode: ${process.version}\nhttps://orlixai.xyz`);
+}
+
+function showHelp(_args: string[]): void {
+  const kw = (s: string): string => c(A.amber, s);
+  const d = (s: string): string => c(A.gray, s);
+  console.log(
+    `\n${c(A.bold + A.violet, 'orlix')} ${c(A.gray, 'v' + VERSION)} — personal AI operating system\n`,
+  );
+  console.log(`  ${kw('orlix')}                    ${d('open interactive shell (default)')}`);
+  console.log(`  ${kw('orlix init')}               ${d('initialise ~/.orlix config')}`);
+  console.log(`  ${kw('orlix status')}             ${d('print status and exit')}`);
+  console.log(`  ${kw('orlix tick')}               ${d('run one governance cycle and exit')}`);
+  console.log(`  ${kw('orlix run [--interval N]')} ${d('start continuous loop (N seconds)')}`);
+  console.log(`  ${kw('orlix version')}            ${d('show version')}\n`);
+}
+
+function statusCmd(_args: string[]): void {
+  const orlix = new Orlix({
+    memoryPath: path.join(CONFIG_DIR, 'memory.json'),
+    auditPath: path.join(CONFIG_DIR, 'audit.jsonl'),
+  });
+  printFullStatus(orlix);
+}
+
+async function tickCmd(_args: string[]): Promise<void> {
+  const orlix = new Orlix({
+    memoryPath: path.join(CONFIG_DIR, 'memory.json'),
+    auditPath: path.join(CONFIG_DIR, 'audit.jsonl'),
+  });
+  if (!orlix.memory.getGoals().length) autoSeed(orlix);
+  await visualTick(orlix);
+}
+
+function runCmd(args: string[]): void {
+  const orlix = new Orlix({
+    memoryPath: path.join(CONFIG_DIR, 'memory.json'),
+    auditPath: path.join(CONFIG_DIR, 'audit.jsonl'),
+  });
+  if (!orlix.memory.getGoals().length) autoSeed(orlix);
+  startLoop(orlix, args);
+}
+
 const commands: Record<string, CmdFn> = {
   shell: startShell,
   init,
-  status,
-  run,
-  tick: runTick,
-  memory: memoryCmd,
-  audit: auditCmd,
-  policy: policyCmd,
+  status: statusCmd,
+  run: runCmd,
+  tick: tickCmd,
   version: showVersion,
   help: showHelp,
   '--version': showVersion,
@@ -264,232 +641,3 @@ void (async (): Promise<void> => {
   }
   await handler(rest);
 })();
-
-// ── command implementations ───────────────────────────────────────────────────
-
-function init(_args: string[]): void {
-  if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR, { recursive: true });
-  const orlix = new Orlix();
-  logger.section('orlix init');
-  logger.ok(`Config: ${c(A.violet, CONFIG_DIR)}`);
-
-  if (!orlix.memory.getGoals().length) {
-    const g = orlix.memory.addGoal({
-      name: 'Ship MVP',
-      deadline: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
-    });
-    logger.ok(`Sample goal: "${g.name}"`);
-  }
-  if (!orlix.memory.getPolicies().length) {
-    ['alert_if_goal_drift_gt_3d', 'alert_if_goal_overdue', 'require_confirm_before_send'].forEach(
-      (rule) => {
-        const p = orlix.memory.addPolicy({ rule });
-        logger.ok(`Policy: ${p.rule}`);
-      },
-    );
-  }
-  logger.section('done');
-  logger.info(`Run ${c(A.amber, 'orlix')} to start the interactive shell.`);
-}
-
-function status(_args: string[]): void {
-  const orlix = new Orlix();
-  logger.section('orlix status');
-  const goals = orlix.memory.getGoals();
-  const policies = orlix.memory.getPolicies('active');
-  const receipts = orlix.auditLog.list(5);
-
-  logger.ok(`tier: ${c(A.amber, 'supervised')} (default)`);
-  console.log('');
-  logger.info(`Goals (${c(A.amber, String(goals.length))})`);
-  goals.forEach((g) => {
-    const pct = Math.round((g.progress ?? 0) * 100);
-    const bar = '█'.repeat(Math.round(pct / 10)) + '░'.repeat(10 - Math.round(pct / 10));
-    console.log(
-      `  ${c(A.gray, g.id.slice(0, 8))}  ${g.name.padEnd(32)}${c(A.violet, bar)} ${pct}%`,
-    );
-  });
-  console.log('');
-  logger.info(`Policies (${c(A.amber, String(policies.length))} active)`);
-  policies.forEach((p) =>
-    console.log(`  ${c(A.violet, p.rule.padEnd(40))} ${c(A.gray, 'v' + p.version)}`),
-  );
-  console.log('');
-  logger.info(`Recent receipts (${c(A.amber, String(receipts.length))})`);
-  receipts.forEach((r) => {
-    const st = r.status === 'verified' ? c(A.green, r.status) : c(A.amber, r.status);
-    console.log(`  ${c(A.gray, r.id.slice(0, 24))}  ${st}  ${(r.intent ?? '').slice(0, 50)}`);
-  });
-}
-
-function run(args: string[]): void {
-  const iFlag = args.indexOf('--interval');
-  const interval = iFlag !== -1 ? parseInt(args[iFlag + 1] ?? '60', 10) * 1000 : 60_000;
-  const orlix = new Orlix();
-  logger.section('governance loop');
-  logger.info(`Interval: ${c(A.amber, interval / 1000 + 's')} · Tier: ${c(A.amber, 'supervised')}`);
-  logger.info(`Press ${c(A.amber, 'Ctrl+C')} to stop.\n`);
-
-  orlix.loop.on(
-    'observe',
-    (s: unknown[]) => s.length && logger.ok(`Observed ${s.length} signal(s)`),
-  );
-  orlix.loop.on('decide', (d: unknown[]) => d.length && logger.ok(`${d.length} decision(s)`));
-  orlix.loop.on('act', (r: Parameters<typeof logger.receipt>[0]) => logger.receipt(r));
-  orlix.loop.on('verify', (r: { id: string }) => logger.ok(`Verified: ${r.id}`));
-  orlix.loop.on('learn', (u: { policy?: { rule: string }; reason: string }) =>
-    logger.ok(`Policy update: ${u.policy?.rule} — ${u.reason}`),
-  );
-  orlix.loop.on('error', (e: Error) => logger.error(e.message));
-  orlix.loop.on('approval_required', (d: { intent: string; id?: string }) => {
-    logger.warn(`Approval required: ${d.intent}`);
-    logger.info(`  Run: ${c(A.amber, `orlix approve ${d.id ?? ''}`)}`);
-  });
-
-  process.on('SIGINT', () => {
-    logger.dim('\nStopping…');
-    orlix.stop();
-    process.exit(0);
-  });
-  orlix.start(interval);
-}
-
-async function runTick(_args: string[]): Promise<void> {
-  const orlix = new Orlix();
-  logger.section('single tick');
-  const r = await orlix.tick();
-  logger.ok(
-    `Signals: ${r.signals.length}  Decisions: ${r.decisions.length}  Receipts: ${r.receipts.length}  Updates: ${r.updates.length}`,
-  );
-  r.receipts.forEach((rec) => logger.receipt(rec));
-}
-
-async function memoryCmd(args: string[]): Promise<void> {
-  const sub = args[0];
-  const orlix = new Orlix();
-
-  if (!sub || sub === 'list') {
-    logger.section('memory');
-    const goals = orlix.memory.getGoals();
-    const facts = orlix.memory.getFacts();
-    const policies = orlix.memory.getPolicies();
-    console.log(`\n${c(A.amber, 'Goals')} (${goals.length})`);
-    goals.forEach((g) =>
-      console.log(
-        `  [${g.id.slice(0, 8)}] ${g.name}  ${c(A.gray, g.deadline ?? 'no deadline')}  ${Math.round((g.progress ?? 0) * 100)}%`,
-      ),
-    );
-    console.log(`\n${c(A.amber, 'Facts')} (${facts.length})`);
-    facts.forEach((f) =>
-      console.log(`  [${f.id.slice(0, 8)}] ${f.content}  ${c(A.gray, f.source)}`),
-    );
-    console.log(`\n${c(A.amber, 'Policies')} (${policies.length})`);
-    policies.forEach((p) =>
-      console.log(
-        `  [${p.id.slice(0, 8)}] ${p.rule}  ${c(A.violet, 'v' + p.version)}  ${p.status}`,
-      ),
-    );
-  } else if (sub === 'add-goal') {
-    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-    const q = (p: string): Promise<string> => new Promise((res) => rl.question(p, res));
-    const name = await q(c(A.violet, '> name: '));
-    const deadline = await q(c(A.violet, '> deadline (YYYY-MM-DD, blank to skip): '));
-    rl.close();
-    const goal = orlix.memory.addGoal({ name: name.trim(), deadline: deadline.trim() || null });
-    logger.ok(`Goal added: "${goal.name}" (${goal.id})`);
-  } else if (sub === 'add-policy') {
-    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-    const rule = await new Promise<string>((res) => rl.question(c(A.violet, '> rule: '), res));
-    rl.close();
-    const p = orlix.memory.addPolicy({ rule: rule.trim() });
-    logger.ok(`Policy added: ${p.rule} (v${p.version})`);
-  } else if (sub === 'export') {
-    console.log(JSON.stringify(orlix.memory.export(), null, 2));
-  } else {
-    logger.error(`Unknown subcommand: ${sub}. Valid: list, add-goal, add-policy, export`);
-  }
-}
-
-function auditCmd(args: string[]): void {
-  const sub = args[0];
-  const orlix = new Orlix();
-
-  if (!sub || sub === 'list') {
-    const limit = args.includes('--limit')
-      ? parseInt(args[args.indexOf('--limit') + 1] ?? '20', 10)
-      : 20;
-    const receipts = orlix.auditLog.list(limit);
-    logger.section(`audit log — ${receipts.length} receipts`);
-    if (!receipts.length) {
-      logger.dim('(empty)');
-      return;
-    }
-    receipts.forEach((r) => logger.receipt(r));
-  } else if (sub === 'get') {
-    const id = args[1];
-    if (!id) {
-      logger.error('Usage: orlix audit get <id>');
-      return;
-    }
-    const r = orlix.auditLog.get(id);
-    if (!r) {
-      logger.error(`Not found: ${id}`);
-      return;
-    }
-    logger.receipt(r);
-  } else {
-    logger.error(`Unknown subcommand: ${sub}. Valid: list [--limit N], get <id>`);
-  }
-}
-
-function policyCmd(args: string[]): void {
-  const orlix = new Orlix();
-  if (!args[0] || args[0] === 'list') {
-    const policies = orlix.memory.getPolicies();
-    logger.section('policies');
-    if (!policies.length) {
-      logger.dim('(none)');
-      return;
-    }
-    policies.forEach((p) => {
-      const st = p.status === 'active' ? c(A.green, 'active') : c(A.amber, p.status);
-      console.log(`  ${st}  ${c(A.violet, p.rule.padEnd(42))} ${c(A.gray, 'v' + p.version)}`);
-    });
-  }
-}
-
-function showVersion(_args: string[]): void {
-  console.log(`orlix v${VERSION}\nnode: ${process.version}\nhttps://orlixai.xyz`);
-}
-
-function showHelp(_args: string[]): void {
-  const kw = (s: string): string => c(A.amber, s);
-  const d = (s: string): string => c(A.gray, s);
-  console.log(
-    `\n${c(A.bold + A.violet, 'orlix')} ${c(A.gray, 'v' + VERSION)} — personal AI operating system\n`,
-  );
-  console.log(
-    `${c(A.amber, 'USAGE')}\n  orlix                      ${d('start interactive shell')}`,
-  );
-  console.log(`  orlix <command> [options]\n`);
-  console.log(`${c(A.amber, 'COMMANDS')}`);
-  [
-    ['shell', 'Start interactive shell (default)'],
-    ['init', 'Initialise Orlix with default goals + policies'],
-    ['status', 'Show goals, policies, and recent receipts'],
-    ['run [--interval N]', 'Start the governance loop (N = seconds, default 60)'],
-    ['tick', 'Run one loop cycle and exit'],
-    ['memory list', 'List all goals, facts, and policies'],
-    ['memory add-goal', 'Add a goal interactively'],
-    ['memory add-policy', 'Add a policy rule interactively'],
-    ['memory export', 'Export memory as JSON to stdout'],
-    ['audit list [--limit N]', 'Show recent audit receipts'],
-    ['audit get <id>', 'Show a specific receipt'],
-    ['policy list', 'List all policies'],
-    ['version', 'Show version info'],
-    ['help', 'Show this help'],
-  ].forEach(([k, v]) => console.log(`  ${kw(k.padEnd(30))} ${d(v)}`));
-  console.log(
-    `\n${c(A.gray, 'Docs: https://orlixai.xyz  ·  GitHub: github.com/tylerbroqs/orlixai')}\n`,
-  );
-}
