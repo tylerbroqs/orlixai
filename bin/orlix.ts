@@ -29,13 +29,16 @@ const c = (code: string, t: string): string => `${code}${t}${A.reset}`;
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 // ── banner ────────────────────────────────────────────────────────────────────
+// Each letter is 5 pixels wide × 7 tall; each pixel = ██ (double-width block)
+const G = A.cyan + A.bold;
 const BANNER = `
-${A.cyan}${A.bold} ██████╗ ██████╗ ██╗     ██╗██╗  ██╗${A.reset}
-${A.cyan}${A.bold}██╔═══██╗██╔══██╗██║     ██║╚██╗██╔╝${A.reset}
-${A.cyan}${A.bold}██║   ██║██████╔╝██║     ██║ ╚███╔╝ ${A.reset}
-${A.cyan}${A.bold}██║   ██║██╔══██╗██║     ██║ ██╔██╗ ${A.reset}
-${A.cyan}${A.bold}╚██████╔╝██║  ██║███████╗██║██╔╝ ██╗${A.reset}
-${A.cyan}${A.bold} ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝╚═╝  ╚═╝${A.reset}`;
+${G}  ██████    ████████    ██          ██████████  ██      ██${A.reset}
+${G}██      ██  ██      ██  ██              ██      ██      ██${A.reset}
+${G}██      ██  ██      ██  ██              ██        ██  ██  ${A.reset}
+${G}██      ██  ████████    ██              ██          ██    ${A.reset}
+${G}██      ██  ██  ██      ██              ██        ██  ██  ${A.reset}
+${G}██      ██  ██    ██    ██              ██      ██      ██${A.reset}
+${G}  ██████    ██      ██  ██████████  ██████████  ██      ██${A.reset}`;
 
 function printBanner(orlix: Orlix): void {
   console.log(BANNER);
