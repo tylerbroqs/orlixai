@@ -1,7 +1,7 @@
-import fs   from 'fs';
+import fs from 'fs';
 import path from 'path';
-import os   from 'os';
-import type { Receipt, ReceiptStatus } from '../types/index.js';
+import os from 'os';
+import type { Receipt } from '../types/index.js';
 
 const DEFAULT_PATH = path.join(os.homedir(), '.orlix', 'audit.jsonl');
 
@@ -17,10 +17,10 @@ export class AuditLog {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
     const receipt: Receipt = {
-      id:        this._receiptId(),
+      id: this._receiptId(),
       timestamp: new Date().toISOString(),
-      status:    'pending',
-      rollback:  { available: true, expiresAt: this._rollbackExpiry() },
+      status: 'pending',
+      rollback: { available: true, expiresAt: this._rollbackExpiry() },
       ...input,
     };
 
@@ -43,7 +43,10 @@ export class AuditLog {
     if (new Date(receipt.rollback.expiresAt) < new Date()) {
       throw new Error(`Rollback expired for: ${id}`);
     }
-    this._update(id, { status: 'rolled_back', rollback: { available: false, expiresAt: receipt.rollback.expiresAt } });
+    this._update(id, {
+      status: 'rolled_back',
+      rollback: { available: false, expiresAt: receipt.rollback.expiresAt },
+    });
   }
 
   get(id: string): Receipt | null {
@@ -56,7 +59,13 @@ export class AuditLog {
       .readFileSync(this.filePath, 'utf8')
       .split('\n')
       .filter(Boolean)
-      .map((l) => { try { return JSON.parse(l) as Receipt; } catch { return null; } })
+      .map((l) => {
+        try {
+          return JSON.parse(l) as Receipt;
+        } catch {
+          return null;
+        }
+      })
       .filter((r): r is Receipt => r !== null)
       .reverse()
       .slice(0, limit);
@@ -65,10 +74,10 @@ export class AuditLog {
   stats(): { total: number; verified: number; failed: number; pending: number } {
     const all = this.list(10_000);
     return {
-      total:    all.length,
+      total: all.length,
       verified: all.filter((r) => r.status === 'verified').length,
-      failed:   all.filter((r) => r.status === 'failed').length,
-      pending:  all.filter((r) => r.status === 'pending').length,
+      failed: all.filter((r) => r.status === 'failed').length,
+      pending: all.filter((r) => r.status === 'pending').length,
     };
   }
 
@@ -79,7 +88,9 @@ export class AuditLog {
       try {
         const r = JSON.parse(line) as Receipt;
         return r.id === id ? JSON.stringify({ ...r, ...patch }) : line;
-      } catch { return line; }
+      } catch {
+        return line;
+      }
     });
     fs.writeFileSync(this.filePath, updated.join('\n') + '\n', 'utf8');
   }
