@@ -1,4 +1,4 @@
-import type { Decision, Evaluator, Policy } from '../types/index.js';
+import type { Decision, Evaluator } from '../types/index.js';
 import type { WorldModel } from './WorldModel.js';
 
 export class PolicyEngine {
@@ -25,7 +25,7 @@ export class PolicyEngine {
         if (decision) {
           decisions.push({
             ...decision,
-            policy:        policy.rule,
+            policy: policy.rule,
             policyVersion: policy.version,
           });
         }
@@ -48,15 +48,15 @@ export class PolicyEngine {
 
   private _registerBuiltins(): void {
     this._rules.set('alert_if_goal_drift_gt_Nd', (world, policy): Decision | null => {
-      const days  = this._days(policy.rule) ?? 3;
+      const days = this._days(policy.rule) ?? 3;
       const stale = world.staleGoals(days);
       if (!stale.length) return null;
       return {
-        intent:   `Goal drift — ${stale.length} goal(s) untouched > ${days} days`,
-        context:  stale.map((g) => g.name).join(', '),
-        action:   'send_priority_alert',
+        intent: `Goal drift — ${stale.length} goal(s) untouched > ${days} days`,
+        context: stale.map((g) => g.name).join(', '),
+        action: 'send_priority_alert',
         priority: 8,
-        policy:   policy.rule,
+        policy: policy.rule,
         policyVersion: policy.version,
       };
     });
@@ -65,33 +65,36 @@ export class PolicyEngine {
       const overdue = world.overdueGoals();
       if (!overdue.length) return null;
       return {
-        intent:   `${overdue.length} goal(s) past deadline`,
-        context:  overdue.map((g) => `${g.name} (due ${g.deadline})`).join(', '),
-        action:   'send_overdue_alert',
+        intent: `${overdue.length} goal(s) past deadline`,
+        context: overdue.map((g) => `${g.name} (due ${g.deadline})`).join(', '),
+        action: 'send_overdue_alert',
         priority: 9,
-        policy:   policy.rule,
+        policy: policy.rule,
         policyVersion: policy.version,
       };
     });
 
-    this._rules.set('require_confirm_before_send', (_w, policy): Decision => ({
-      intent:   'Outbound action gated by confirmation policy',
-      context:  'Policy: require_confirm_before_send is active',
-      action:   'gate_send_actions',
-      priority: 10,
-      policy:   policy.rule,
-      policyVersion: policy.version,
-    }));
+    this._rules.set(
+      'require_confirm_before_send',
+      (_w, policy): Decision => ({
+        intent: 'Outbound action gated by confirmation policy',
+        context: 'Policy: require_confirm_before_send is active',
+        action: 'gate_send_actions',
+        priority: 10,
+        policy: policy.rule,
+        policyVersion: policy.version,
+      }),
+    );
 
     this._rules.set('summarise_email_on_wake', (world, policy): Decision | null => {
       const signals = world.recentSignals('email_received', 1);
       if (!signals.length) return null;
       return {
-        intent:   'Summarise unread emails',
-        context:  `${signals.length} email signal(s) waiting`,
-        action:   'summarise_inbox',
+        intent: 'Summarise unread emails',
+        context: `${signals.length} email signal(s) waiting`,
+        action: 'summarise_inbox',
         priority: 5,
-        policy:   policy.rule,
+        policy: policy.rule,
         policyVersion: policy.version,
       };
     });
@@ -105,11 +108,11 @@ export class PolicyEngine {
       });
       if (!soon.length) return null;
       return {
-        intent:   'Calendar event starting in < 15 minutes',
-        context:  soon.map((s) => (s.payload?.title as string) ?? 'Untitled').join(', '),
-        action:   'send_calendar_reminder',
+        intent: 'Calendar event starting in < 15 minutes',
+        context: soon.map((s) => (s.payload?.title as string) ?? 'Untitled').join(', '),
+        action: 'send_calendar_reminder',
         priority: 7,
-        policy:   policy.rule,
+        policy: policy.rule,
         policyVersion: policy.version,
       };
     });

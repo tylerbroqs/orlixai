@@ -6,17 +6,31 @@ export abstract class BaseIntegration implements ActionHandler {
   private _connected = false;
 
   constructor(name: string, config: Record<string, unknown> = {}) {
-    this.name   = name;
+    this.name = name;
     this.config = config;
   }
 
-  async connect(): Promise<void>    { this._connected = true; }
-  async disconnect(): Promise<void> { this._connected = false; }
-  get connected(): boolean          { return this._connected; }
+  connect(): Promise<void> {
+    this._connected = true;
+    return Promise.resolve();
+  }
+  disconnect(): Promise<void> {
+    this._connected = false;
+    return Promise.resolve();
+  }
+  get connected(): boolean {
+    return this._connected;
+  }
 
-  async observe(): Promise<Omit<Signal, 'id'>[]>                  { return []; }
-  async execute(_d: Decision, _r: Receipt): Promise<void>         { return; }
-  async verify(_r: Receipt): Promise<string>                      { return 'completed'; }
+  observe(): Promise<Omit<Signal, 'id'>[]> {
+    return Promise.resolve([]);
+  }
+  execute(_d: Decision, _r: Receipt): Promise<void> {
+    return Promise.resolve();
+  }
+  verify(_r: Receipt): Promise<string> {
+    return Promise.resolve('completed');
+  }
 
   protected signal(type: string, payload: Record<string, unknown> = {}): Omit<Signal, 'id'> {
     return { type, source: this.name, payload, timestamp: new Date().toISOString() };

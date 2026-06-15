@@ -30,7 +30,7 @@ const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms
 
 // ── banner ────────────────────────────────────────────────────────────────────
 // Each letter is 5 pixels wide × 7 tall; each pixel = ██ (double-width block)
-const G = A.cyan + A.bold;
+const G = A.amber + A.bold;
 const BANNER = `
 ${G}  ██████    ████████    ██          ██████████  ██      ██${A.reset}
 ${G}██      ██  ██      ██  ██              ██      ██      ██${A.reset}
@@ -41,33 +41,67 @@ ${G}██      ██  ██    ██    ██              ██      █�
 ${G}  ██████    ██      ██  ██████████  ██████████  ██      ██${A.reset}`;
 
 function printBanner(orlix: Orlix): void {
+  const goals = orlix.memory.getGoals().length;
+  const policies = orlix.memory.getPolicies('active').length;
+
   console.log(BANNER);
   console.log();
 
-  // info box
-  const goals = orlix.memory.getGoals().length;
-  const policies = orlix.memory.getPolicies('active').length;
-  const memPath =
-    (orlix as unknown as { _memoryPath?: string })._memoryPath ??
-    path.join(CONFIG_DIR, 'memory.json');
-
-  const W = 46;
-  const row = (label: string, val: string): void => {
-    const esc = String.fromCharCode(27);
-    const ansiRe = new RegExp(esc + '\\[[^m]+m', 'g');
-    const pad = W - label.length - val.replace(ansiRe, '').length - 2;
-    console.log(`  │ ${c(A.amber, label)}${val}${' '.repeat(Math.max(0, pad))} │`);
-  };
-  console.log(`  ┌${'─'.repeat(W)}┐`);
-  row('Memory   ', c(A.gray, memPath.replace(os.homedir(), '~')));
-  row('Version  ', c(A.violet, VERSION));
-  row('Tier     ', c(A.green, 'supervised'));
-  row('Goals    ', c(goals > 0 ? A.amber : A.gray, `${goals} loaded`));
-  row('Policies ', c(policies > 0 ? A.amber : A.gray, `${policies} active`));
-  console.log(`  └${'─'.repeat(W)}┘`);
+  // ── info line ─────────────────────────────────────────────────────────────
+  console.log(
+    `  ${c(A.bold + A.amber, 'ORLIX TERMINAL')} ` +
+      `${c(A.gray, '—')} ` +
+      `${c(A.violet, 'Your personal AI operating system')} ` +
+      `${c(A.gray, `| v${VERSION}`)} ` +
+      `${c(A.amber, '⬡')}`,
+  );
   console.log();
-  console.log(`  ${c(A.green, '●')} ready  — type ${c(A.amber, '/help')} to begin`);
-  console.log(`  ${c(A.gray, `orlixai ${VERSION}`)}`);
+
+  // ── status bar ────────────────────────────────────────────────────────────
+  console.log(
+    `  ${c(A.green, '●')} ` +
+      `${c(A.bold + A.amber, 'orlix')} ` +
+      `${c(A.gray, '|')} ` +
+      `${c(A.violet, 'supervised')} ` +
+      `${c(A.gray, '|')} ` +
+      `${c(goals > 0 ? A.amber : A.gray, `${goals} goals`)} ` +
+      `${c(A.gray, '|')} ` +
+      `${c(policies > 0 ? A.amber : A.gray, `${policies} policies`)}`,
+  );
+  console.log();
+
+  // ── commands ──────────────────────────────────────────────────────────────
+  console.log(
+    `  ${c(A.amber, '◆')} ${c(A.bold + A.amber, 'COMMANDS')}  ${c(A.gray, '─'.repeat(44))}`,
+  );
+  console.log();
+
+  const cmdRow = (name: string, desc: string): void => {
+    console.log(`    ${c(A.amber, name.padEnd(24))} ${c(A.gray, desc)}`);
+  };
+  cmdRow('tick', 'Run one governance cycle (observe→decide→act→verify→learn)');
+  cmdRow('run', 'Start continuous governance loop');
+  cmdRow('goals', 'View all goals with progress bars');
+  cmdRow('facts', 'View stored context facts');
+  cmdRow('policies', 'View active policy rules');
+  cmdRow('add goal <name>', 'Create a new goal');
+  cmdRow('add fact <text>', 'Store a context fact');
+  cmdRow('add policy <rule>', 'Activate a policy rule');
+  cmdRow('progress <name> N', 'Set goal progress to N%');
+  cmdRow('status', 'Full system status + recent receipts');
+  cmdRow('audit', 'View audit log receipts');
+  cmdRow('memory', 'Inspect or export memory as JSON');
+  cmdRow('/help', 'Show detailed command reference');
+  cmdRow('/exit', 'Quit');
+  console.log();
+
+  // ── tips ──────────────────────────────────────────────────────────────────
+  console.log(`  ${c(A.gray, 'Run any command:')}  ${c(A.amber, 'orlix <command> --help')}`);
+  console.log(
+    `  ${c(A.gray, 'Try')} ${c(A.amber, '/tick')} ` +
+      `${c(A.gray, 'to run a governance cycle, or')} ` +
+      `${c(A.amber, 'add goal <name>')} ${c(A.gray, 'to begin')}`,
+  );
   console.log();
 }
 
