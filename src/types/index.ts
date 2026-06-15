@@ -1,3 +1,5 @@
+import type { WorldModel } from '../core/WorldModel.js';
+
 // ─── Authority Tiers ────────────────────────────────────────────────────────
 
 export type TierName = 'observe' | 'suggest' | 'confirm' | 'supervised' | 'autonomous';
@@ -99,7 +101,7 @@ export interface Decision {
   payload?: Record<string, unknown>;
 }
 
-export type Evaluator = (worldModel: import('../core/WorldModel.js').WorldModel, policy: Policy) => Decision | null;
+export type Evaluator = (worldModel: WorldModel, policy: Policy) => Decision | null;
 
 // ─── Governance Loop ─────────────────────────────────────────────────────────
 
@@ -118,7 +120,7 @@ export interface PolicyUpdate {
 export interface ActionHandler {
   observe?: () => Promise<Omit<Signal, 'id'>[]>;
   execute?: (decision: Decision, receipt: Receipt) => Promise<void>;
-  verify?:  (receipt: Receipt) => Promise<string>;
+  verify?: (receipt: Receipt) => Promise<string>;
 }
 
 // ─── Integration ─────────────────────────────────────────────────────────────
