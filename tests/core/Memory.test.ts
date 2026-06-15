@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import fs   from 'fs';
+import fs from 'fs';
 import path from 'path';
-import os   from 'os';
+import os from 'os';
 import { Memory } from '../../src/core/Memory.js';
 
 const tmpPath = path.join(os.tmpdir(), `orlix-test-memory-${Date.now()}.json`);
@@ -9,8 +9,12 @@ const tmpPath = path.join(os.tmpdir(), `orlix-test-memory-${Date.now()}.json`);
 describe('Memory', () => {
   let mem: Memory;
 
-  beforeEach(() => { mem = new Memory(tmpPath).load(); });
-  afterEach(() => { if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath); });
+  beforeEach(() => {
+    mem = new Memory(tmpPath).load();
+  });
+  afterEach(() => {
+    if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath);
+  });
 
   // ── goals ──────────────────────────────────────────────────────────────────
 
@@ -22,13 +26,13 @@ describe('Memory', () => {
 
       const reloaded = new Memory(tmpPath).load();
       expect(reloaded.getGoals()).toHaveLength(1);
-      expect(reloaded.getGoals()[0]!.name).toBe('Ship MVP');
+      expect(reloaded.getGoals()[0].name).toBe('Ship MVP');
     });
 
     it('updates a goal', () => {
       const g = mem.addGoal({ name: 'Write docs' });
       mem.updateGoal(g.id, { progress: 0.5 });
-      expect(mem.getGoals()[0]!.progress).toBe(0.5);
+      expect(mem.getGoals()[0].progress).toBe(0.5);
     });
 
     it('removes a goal', () => {
@@ -46,7 +50,11 @@ describe('Memory', () => {
 
   describe('facts', () => {
     it('adds a fact with source tracking', () => {
-      const f = mem.addFact({ content: 'Alex owns design review', source: 'email', confidence: 0.95 });
+      const f = mem.addFact({
+        content: 'Alex owns design review',
+        source: 'email',
+        confidence: 0.95,
+      });
       expect(f.source).toBe('email');
       expect(f.confidence).toBe(0.95);
     });
