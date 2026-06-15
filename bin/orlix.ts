@@ -47,14 +47,17 @@ function printBanner(orlix: Orlix): void {
   console.log(BANNER);
   console.log();
 
-  // ── info line ─────────────────────────────────────────────────────────────
-  console.log(
-    `  ${c(A.bold + A.amber, 'ORLIX TERMINAL')} ` +
-      `${c(A.gray, '—')} ` +
-      `${c(A.violet, 'Your personal AI operating system')} ` +
-      `${c(A.gray, `| v${VERSION}`)} ` +
-      `${c(A.amber, '⬡')}`,
-  );
+  // ── bordered info box (DarkSOL style) ────────────────────────────────────
+  const infoInner = ` ${c(A.bold + A.amber, 'ORLIX TERMINAL')} ${c(A.gray, '—')} ${c(A.violet, 'Your personal AI OS')} ${c(A.gray, `| v${VERSION}`)} ${c(A.amber, '⬡')} `;
+  const infoPlain = ` ORLIX TERMINAL — Your personal AI OS | v${VERSION} ⬡ `;
+  const boxW = infoPlain.length;
+  console.log(`  ${c(A.amber, '┌' + '─'.repeat(boxW) + '┐')}`);
+  console.log(`  ${c(A.amber, '│')}${infoInner}${c(A.amber, '│')}`);
+  console.log(`  ${c(A.amber, '└' + '─'.repeat(boxW) + '┘')}`);
+  console.log();
+
+  // ── tagline ───────────────────────────────────────────────────────────────
+  console.log(`  ${c(A.gray, 'Observe. Decide. Act. Verify. Learn. — all in one loop.')}`);
   console.log();
 
   // ── status bar ────────────────────────────────────────────────────────────
@@ -96,11 +99,9 @@ function printBanner(orlix: Orlix): void {
   console.log();
 
   // ── tips ──────────────────────────────────────────────────────────────────
-  console.log(`  ${c(A.gray, 'Run any command:')}  ${c(A.amber, 'orlix <command> --help')}`);
+  console.log(`  ${c(A.gray, '⊕')} Run any command: ${c(A.amber, 'orlix <command> --help')}`);
   console.log(
-    `  ${c(A.gray, 'Try')} ${c(A.amber, '/tick')} ` +
-      `${c(A.gray, 'to run a governance cycle, or')} ` +
-      `${c(A.amber, 'add goal <name>')} ${c(A.gray, 'to begin')}`,
+    `  ${c(A.gray, '⊕')} Want AI governance? Run ${c(A.amber, '/tick')} ${c(A.gray, 'to start the loop')}`,
   );
   console.log();
 }
