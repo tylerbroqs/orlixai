@@ -1,10 +1,10 @@
-import fs   from 'fs';
+import fs from 'fs';
 import path from 'path';
-import os   from 'os';
+import os from 'os';
 import type { Goal, Fact, Policy, MemoryStore, MemoryExport } from '../types/index.js';
 
-const DEFAULT_PATH    = path.join(os.homedir(), '.orlix', 'memory.json');
-const SCHEMA_VERSION  = 'orlix/v1';
+const DEFAULT_PATH = path.join(os.homedir(), '.orlix', 'memory.json');
+const SCHEMA_VERSION = 'orlix/v1';
 
 export class Memory {
   readonly filePath: string;
@@ -45,9 +45,12 @@ export class Memory {
   addGoal(input: Pick<Goal, 'name'> & Partial<Pick<Goal, 'deadline' | 'progress'>>): Goal {
     this._ensure();
     const goal: Goal = {
-      id: this._id(), name: input.name,
-      deadline: input.deadline ?? null, progress: input.progress ?? 0,
-      createdAt: now(), updatedAt: now(),
+      id: this._id(),
+      name: input.name,
+      deadline: input.deadline ?? null,
+      progress: input.progress ?? 0,
+      createdAt: now(),
+      updatedAt: now(),
     };
     this._data!.goals.push(goal);
     this.save();
@@ -58,7 +61,7 @@ export class Memory {
     this._ensure();
     const g = this._data!.goals.find((x) => x.id === id);
     if (!g) throw new Error(`Goal not found: ${id}`);
-    Object.assign(g, patch, { updatedAt: now() });
+    Object.assign(g, { updatedAt: now() }, patch);
     this.save();
     return g;
   }
@@ -79,8 +82,10 @@ export class Memory {
   addFact(input: Pick<Fact, 'content'> & Partial<Pick<Fact, 'source' | 'confidence'>>): Fact {
     this._ensure();
     const fact: Fact = {
-      id: this._id(), content: input.content,
-      source: input.source ?? 'manual', confidence: input.confidence ?? 1.0,
+      id: this._id(),
+      content: input.content,
+      source: input.source ?? 'manual',
+      confidence: input.confidence ?? 1.0,
       createdAt: now(),
     };
     this._data!.facts.push(fact);
@@ -105,11 +110,13 @@ export class Memory {
     this._ensure();
     const existing = this._data!.policies.filter((p) => p.rule === input.rule);
     const policy: Policy = {
-      id: this._id(), rule: input.rule,
+      id: this._id(),
+      rule: input.rule,
       version: existing.length + 1,
-      status:  input.status   ?? 'active',
+      status: input.status ?? 'active',
       priority: input.priority ?? 5,
-      createdAt: now(), updatedAt: now(),
+      createdAt: now(),
+      updatedAt: now(),
     };
     this._data!.policies.push(policy);
     this.save();
@@ -137,11 +144,11 @@ export class Memory {
   export(): MemoryExport {
     this._ensure();
     return {
-      schema:      SCHEMA_VERSION,
+      schema: SCHEMA_VERSION,
       exported_at: now(),
-      goals:       this.getGoals(),
-      facts:       this.getFacts(),
-      policies:    this.getPolicies(),
+      goals: this.getGoals(),
+      facts: this.getFacts(),
+      policies: this.getPolicies(),
     };
   }
 
@@ -160,6 +167,8 @@ export class Memory {
   }
 }
 
-function now(): string { return new Date().toISOString(); }
+function now(): string {
+  return new Date().toISOString();
+}
 
 export default Memory;
