@@ -230,10 +230,10 @@ async function runSetup(rl: readline.Interface, cfg: AppConfig): Promise<AppConf
 
 // ── boot sequence ─────────────────────────────────────────────────────────────
 async function bootSequence(orlix: Orlix, cfg: AppConfig): Promise<void> {
-  const step = async (icon: string, label: string, detail: string): Promise<void> => {
+  const step = async (label: string, detail: string): Promise<void> => {
     await sleep(80);
-    process.stdout.write(
-      `  ${c(A.green, '✓')} ${icon}  ${c(A.bold + A.amber, label.padEnd(26))} ${c(A.gray, '—')} ${c(A.gray, detail)}\n`,
+    console.log(
+      `  ${c(A.green, '+')} ${c(A.bold + A.amber, label.padEnd(26))} ${c(A.gray, '--')} ${c(A.gray, detail)}`,
     );
   };
 
@@ -241,35 +241,34 @@ async function bootSequence(orlix: Orlix, cfg: AppConfig): Promise<void> {
   const facts = orlix.memory.getFacts().length;
   const policies = orlix.memory.getPolicies('active').length;
 
-  await step('🧠', 'Loading memory', `${goals} goals · ${facts} facts · ${policies} policies`);
-  await step('⚙️ ', 'Initializing engine', 'governance loop ready');
+  await step('Loading memory', `${goals} goals, ${facts} facts, ${policies} policies`);
+  await step('Initializing engine', 'governance loop ready');
   await step(
-    '🔑',
     'Loading credentials',
-    fs.existsSync(CONFIG_FILE) ? CONFIG_FILE : 'no config — run /setup',
+    fs.existsSync(CONFIG_FILE) ? CONFIG_FILE : 'no config -- run /setup',
   );
 
   const builtinNames = DATA_SOURCES.filter((s) => s.builtin)
     .map((s) => s.name)
-    .join(' · ');
-  await step('📊', 'Connecting data sources', builtinNames);
+    .join(', ');
+  await step('Connecting data sources', builtinNames);
 
   const connectedOptional = DATA_SOURCES.filter(
     (s) => !s.builtin && s.configKey && cfg.keys?.[s.configKey],
   ).map((s) => s.name);
   if (connectedOptional.length) {
-    await step('🔗', 'Connecting optional', connectedOptional.join(' · '));
+    await step('Connecting optional', connectedOptional.join(', '));
   }
 
   console.log();
   if (cfg.llm) {
     const prov = LLM_PROVIDERS.find((p) => p.id === cfg.llm!.provider);
     console.log(
-      `  ${c(A.green, '✓')} LLM: ${c(A.bold + A.amber, (prov?.name ?? cfg.llm.provider).toUpperCase())} ${c(A.gray, '→')} ${c(A.violet, cfg.llm.model)}`,
+      `  ${c(A.green, '+')} LLM: ${c(A.bold + A.amber, (prov?.name ?? cfg.llm.provider).toUpperCase())} ${c(A.gray, '->')} ${c(A.violet, cfg.llm.model)}`,
     );
   } else {
     console.log(
-      `  ${c(A.gray, '✗')} LLM: ${c(A.gray, 'not configured')}  ${c(A.amber, '→ run /setup to add your key')}`,
+      `  ${c(A.gray, '-')} LLM: ${c(A.gray, 'not configured')}  ${c(A.amber, '-> run /setup to add your key')}`,
     );
   }
   console.log();
@@ -286,7 +285,7 @@ function showDashboard(orlix: Orlix, cfg: AppConfig): void {
     on ? c(A.green, 'Always available') : c(A.gray, 'No key — /setup');
 
   // ── infrastructure ─────────────────────────────────────────────────────────
-  console.log(c(A.bold + A.amber, '  🔌 Infrastructure'));
+  console.log(c(A.bold + A.amber, '  Infrastructure'));
   console.log(c(A.gray, '  ' + '─'.repeat(70)));
 
   const infRow = (name: string, dot_: string, tag: string, detail: string): void => {
@@ -304,14 +303,14 @@ function showDashboard(orlix: Orlix, cfg: AppConfig): void {
     'Memory',
     dot(true),
     '~/.orlix/memory',
-    `${goals} goals · ${facts} facts · ${policies} policies`,
+    `${goals} goals, ${facts} facts, ${policies} policies`,
   );
   infRow('Audit Log', dot(true), '~/.orlix/audit', 'full immutable trail');
-  infRow('Governance', dot(true), 'supervised tier', 'observe→decide→act→verify→learn');
+  infRow('Governance', dot(true), 'supervised tier', 'observe->decide->act->verify->learn');
   console.log();
 
   // ── data sources ───────────────────────────────────────────────────────────
-  console.log(c(A.bold + A.amber, '  📊 Data Sources'));
+  console.log(c(A.bold + A.amber, '  Data Sources'));
   console.log(c(A.gray, '  ' + '─'.repeat(70)));
 
   let connected = 0;
@@ -334,7 +333,7 @@ function printHeader(): void {
   console.log(BANNER);
   console.log();
   console.log(c(A.bold + A.amber, '  O  R  L  I  X'));
-  console.log(c(A.gray, `  Personal AI Operating System · Governance Layer · v${VERSION}`));
+  console.log(c(A.gray, `  Personal AI Operating System | Governance Layer | v${VERSION}`));
   console.log();
 }
 
@@ -723,7 +722,7 @@ function startShell(): Promise<void> {
 
     const doPrompt = (): void => {
       rl.question(
-        `\n${c(A.amber, '⚡')} ${c(A.bold + A.amber, 'You')} ${c(A.gray, '→')} `,
+        `\n${c(A.amber, '>')} ${c(A.bold + A.amber, 'You')} ${c(A.gray, '->')} `,
         (raw: string) => {
           const line = raw.trim();
           if (!line) {
