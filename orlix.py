@@ -1,0 +1,401 @@
+#!/usr/bin/env python3
+"""ORLIX — Personal AI Operating System CLI."""
+
+from __future__ import annotations
+
+import json
+import os
+import sys
+from pathlib import Path
+
+try:
+    import readline  # noqa: F401  — arrow-key history on Linux/macOS
+except ImportError:
+    pass  # Windows — not available, that's fine
+
+try:
+    from rich import box
+    from rich.align import Align
+    from rich.console import Console
+    from rich.padding import Padding
+    from rich.panel import Panel
+    from rich.rule import Rule
+    from rich.table import Table
+    from rich.text import Text
+except ImportError:
+    sys.exit(
+        "Missing dependency.\n"
+        "Fix:  pip install rich\n"
+        "      py -m pip install rich   (Windows)"
+    )
+
+# ── version & paths ───────────────────────────────────────────────────────────
+VERSION    = "0.5.0-beta"
+ORLIX_DIR  = Path.home() / ".orlix"
+CONFIG_FILE = ORLIX_DIR / "config.json"
+MEMORY_FILE = ORLIX_DIR / "memory.json"
+
+# ── palette ───────────────────────────────────────────────────────────────────
+O  = "#ff9900"  # orange  — primary accent
+OD = "#884400"  # orange dim — panel borders
+G  = "#22cc66"  # green   — live / connected
+R  = "#ff4455"  # red     — error / missing
+W  = "#e8e8e8"  # white   — main text
+M  = "#777777"  # muted   — secondary text
+B  = "#444444"  # border dim
+
+# ── static data ───────────────────────────────────────────────────────────────
+LLM_PROVIDERS: list[tuple[str, str, str]] = [
+    ("anthropic", "Anthropic Claude",  "claude-opus-4-8"),
+    ("openai",    "OpenAI GPT",        "gpt-4o"),
+    ("google",    "Google Gemini",     "gemini-2.0-flash"),
+    ("xai",       "xAI Grok",          "grok-3"),
+    ("deepseek",  "DeepSeek",          "deepseek-chat"),
+    ("zhipu",     "Zhipu GLM",         "glm-4"),
+    ("minimax",   "Minimax",           "abab6.5s-chat"),
+    ("moonshot",  "Moonshot Kimi",     "moonshot-v1-128k"),
+]
+
+DATA_SOURCES: list[tuple[str, bool, str | None]] = [
+    ("CoinGecko",   True,  None),
+    ("YFinance",    True,  None),
+    ("DexScreener", True,  None),
+    ("Hyperliquid", True,  None),
+    ("FRED",        False, "fred"),
+    ("Y2 Intel",    False, "y2"),
+    ("Elfa AI",     False, "elfa"),
+    ("Aster DEX",   False, "asterdex"),
+]
+
+COMMANDS: list[tuple[str, str]] = [
+    ("chat",       "Start AI conversation"),
+    ("memory",     "View / edit memory store"),
+    ("governance", "Goals, facts & policies"),
+    ("research",   "Search data sources"),
+    ("report",     "Generate reports"),
+    ("setup",      "Configure LLM & API keys"),
+    ("config",     "Edit configuration"),
+    ("exit",       "Quit ORLIX"),
+]
+
+# ── data helpers ──────────────────────────────────────────────────────────────
+
+def _load_json(path: Path) -> dict:
+    try:
+        return json.loads(path.read_text("utf-8")) if path.exists() else {}
+    except Exception:
+        return {}
+
+def load_config() -> dict:
+    return _load_json(CONFIG_FILE)
+
+def load_memory() -> dict:
+    d = _load_json(MEMORY_FILE)
+    d.setdefault("goals", [])
+    d.setdefault("facts", [])
+    d.setdefault("policies", [])
+    return d
+
+def save_config(cfg: dict) -> None:
+    ORLIX_DIR.mkdir(parents=True, exist_ok=True)
+    CONFIG_FILE.write_text(json.dumps(cfg, indent=2), "utf-8")
+
+# ── UI components ─────────────────────────────────────────────────────────────
+
+def _header() -> Panel:
+    t = Text()
+    t.append(" ORLIX ", style=f"bold reverse {O}")
+    t.append("  Personal AI Operating System", style=f"bold {W}")
+    t.append(f"   v{VERSION}", style=M)
+    return Panel(
+        Align.left(t, vertical="middle"),
+        box=box.HEAVY,
+        border_style=O,
+        padding=(0, 1),
+    )
+
+
+def _status_table(cfg: dict, mem: dict) -> Table:
+    llm  = cfg.get("llm")
+    opt  = cfg.get("keys", {})
+    connected = sum(
+        1 for _, builtin, key in DATA_SOURCES
+        if builtin or (key and opt.get(key))
+    )
+    goals    = len(mem["goals"])
+    facts    = len(mem["facts"])
+    policies = len(mem["policies"])
+
+    rows: list[tuple[bool, str, str]] = [
+        (bool(llm),  "LLM",          llm["model"] if llm else "not configured"),
+        (True,       "Memory",        f"{goals}g  {facts}f  {policies}p"),
+        (True,       "Governance",    "supervised"),
+        (True,       "Data Sources",  f"{connected}/{len(DATA_SOURCES)} connected"),
+    ]
+
+    t = Table(
+        box=None,
+        show_header=True,
+        header_style=f"bold {O}",
+        padding=(0, 1, 0, 0),
+        show_edge=False,
+        expand=False,
+    )
+    t.add_column("STATUS",  min_width=15)
+    t.add_column("",        min_width=20)
+
+    for ok, label, detail in rows:
+        dot   = "●" if ok else "○"
+        color = G if ok else R
+        t.add_row(
+            Text(f"{dot}  {label}", style=f"bold {color}"),
+            Text(detail, style=G if ok else R),
+        )
+    return t
+
+
+def _commands_table() -> Table:
+    t = Table(
+        box=None,
+        show_header=True,
+        header_style=f"bold {O}",
+        padding=(0, 1, 0, 0),
+        show_edge=False,
+        expand=False,
+    )
+    t.add_column("COMMANDS", min_width=12)
+    t.add_column("",         min_width=22)
+
+    for cmd, desc in COMMANDS:
+        t.add_row(Text(cmd, style=f"bold {W}"), Text(desc, style=M))
+    return t
+
+
+def _dashboard(cfg: dict, mem: dict) -> Table:
+    """Two-column grid: status left, commands right. Fits 80+ cols."""
+    outer = Table(
+        box=None,
+        show_header=False,
+        padding=(0, 2, 0, 0),
+        show_edge=False,
+        expand=False,
+    )
+    outer.add_column(min_width=38)   # status side
+    outer.add_column(min_width=38)   # commands side
+    outer.add_row(_status_table(cfg, mem), _commands_table())
+    return outer
+
+
+def _sources_panel(cfg: dict) -> Panel:
+    opt = cfg.get("keys", {})
+
+    # two rows: built-in | optional
+    builtin_row = Text()
+    optional_row = Text()
+
+    first_b = True
+    first_o = True
+    has_optional = False
+
+    for name, builtin, key in DATA_SOURCES:
+        active = builtin or bool(key and opt.get(key))
+        if builtin:
+            if not first_b:
+                builtin_row.append("   ")
+            first_b = False
+            builtin_row.append("● ", style=f"bold {G}")
+            builtin_row.append(name, style=W)
+        else:
+            has_optional = has_optional or active
+            if not first_o:
+                optional_row.append("   ")
+            first_o = False
+            optional_row.append("● " if active else "○ ", style=f"bold {G if active else B}")
+            optional_row.append(name, style=(W if active else M))
+
+    content = Text()
+    content.append_text(builtin_row)
+    content.append("\n")
+    content.append_text(optional_row)
+
+    return Panel(
+        content,
+        title=f"[bold {O}]CONNECTED SOURCES[/]",
+        border_style=OD,
+        box=box.SIMPLE_HEAVY,
+        padding=(0, 1),
+    )
+
+
+def _footer(cfg: dict) -> Text:
+    t = Text()
+    if not cfg.get("llm"):
+        t.append("  ", style="")
+        t.append("/setup", style=f"bold {O}")
+        t.append(" — connect your first LLM provider    ", style=M)
+        t.append("/help", style=f"bold {W}")
+        t.append(" for all commands", style=M)
+    else:
+        pid   = cfg["llm"].get("provider", "")
+        pname = next((n for p, n, _ in LLM_PROVIDERS if p == pid), pid)
+        t.append(f"  {pname} ready", style=f"bold {G}")
+        t.append("    type ", style=M)
+        t.append("chat", style=f"bold {O}")
+        t.append(" to begin    ", style=M)
+        t.append("/help", style=f"bold {W}")
+        t.append(" for all commands", style=M)
+    return t
+
+
+# ── startup screen ────────────────────────────────────────────────────────────
+
+def startup(console: Console) -> None:
+    cfg = load_config()
+    mem = load_memory()
+
+    console.print()
+    console.print(_header())
+    console.print()
+    console.print(Padding(_dashboard(cfg, mem), (0, 0, 0, 2)))
+    console.print()
+    console.print(Padding(_sources_panel(cfg), (0, 0, 0, 0)))
+    console.print(Rule(style=B))
+    console.print(_footer(cfg))
+    console.print()
+
+
+# ── setup wizard ──────────────────────────────────────────────────────────────
+
+def run_setup(console: Console) -> None:
+    cfg = load_config()
+    console.print()
+    console.print(Panel(
+        f"[bold {O}]ORLIX SETUP — Bring Your Own Key[/]",
+        box=box.HEAVY, border_style=O, padding=(0, 2),
+    ))
+    console.print()
+    console.print(f"  [{O}]Select LLM provider:[/]\n")
+
+    for i, (_, name, model) in enumerate(LLM_PROVIDERS, 1):
+        console.print(f"  [{O}]{i}.[/]  [{W}]{name:<20}[/]  [{M}]{model}[/]")
+    console.print(f"  [{M}]{len(LLM_PROVIDERS) + 1}.  Skip for now[/]")
+    console.print()
+
+    try:
+        raw = console.input(f"  [{O}]>[/] [{M}]Choice [1-{len(LLM_PROVIDERS)+1}]:[/] ")
+        idx = int(raw.strip()) - 1
+    except (ValueError, EOFError, KeyboardInterrupt):
+        console.print(f"\n  [{M}]Setup cancelled.[/]")
+        return
+
+    if 0 <= idx < len(LLM_PROVIDERS):
+        pid, pname, pmodel = LLM_PROVIDERS[idx]
+        try:
+            key = console.input(f"  [{O}]>[/] [{M}]API key for {pname}:[/] ").strip()
+        except (EOFError, KeyboardInterrupt):
+            console.print(f"\n  [{M}]Setup cancelled.[/]")
+            return
+        if key:
+            cfg["llm"] = {"provider": pid, "model": pmodel, "key": key}
+            save_config(cfg)
+            console.print(f"\n  [bold {G}]✓[/]  LLM configured: [{O}]{pname}[/]  [{M}]→ {pmodel}[/]")
+        else:
+            console.print(f"  [{M}]No key entered — skipped.[/]")
+
+    # optional keys
+    console.print()
+    console.print(f"  [{M}]Optional data-source keys (Enter to skip):[/]\n")
+    keys_cfg: dict[str, str] = dict(cfg.get("keys", {}))
+    for name, _, key in DATA_SOURCES:
+        if key is None:
+            continue
+        try:
+            val = console.input(
+                f"  [{M}]>[/]  [{W}]{name:<14}[/]  [{M}]API key:[/] "
+            ).strip()
+        except (EOFError, KeyboardInterrupt):
+            break
+        if val:
+            keys_cfg[key] = val
+
+    cfg["keys"] = keys_cfg
+    save_config(cfg)
+    console.print(f"\n  [bold {G}]✓[/]  Config saved  [{M}]{CONFIG_FILE}[/]")
+    console.print()
+
+
+# ── REPL ──────────────────────────────────────────────────────────────────────
+
+def _dispatch(line: str, console: Console) -> bool:
+    """Return False to exit the REPL."""
+    cmd = line.strip().lstrip("/").lower()
+    if not cmd:
+        return True
+
+    if cmd in ("exit", "quit", "q", "bye"):
+        console.print(f"\n  [{M}]Goodbye.[/]\n")
+        return False
+
+    if cmd in ("help", "?", "h"):
+        console.print()
+        t = Table(box=None, show_header=False, padding=(0, 2, 0, 2))
+        t.add_column(style=f"bold {W}", min_width=14)
+        t.add_column(style=M)
+        for c, d in COMMANDS:
+            t.add_row(c, d)
+        console.print(Padding(t, (0, 0, 0, 2)))
+        console.print()
+        return True
+
+    if cmd == "setup":
+        run_setup(console)
+        return True
+
+    if cmd == "clear":
+        console.clear()
+        startup(console)
+        return True
+
+    known = {c for c, _ in COMMANDS}
+    if cmd in known:
+        console.print(f"  [{M}]`{cmd}` is not yet implemented in this preview.[/]")
+    else:
+        console.print(
+            f"  [{R}]Unknown:[/] [{W}]{cmd}[/]  "
+            f"(type [{O}]help[/] or [{O}]exit[/])"
+        )
+    return True
+
+
+def repl(console: Console) -> None:
+    startup(console)
+    while True:
+        try:
+            line = console.input(f"  [{O}]orlix[/] [{M}]›[/] ")
+        except (EOFError, KeyboardInterrupt):
+            console.print(f"\n  [{M}]Goodbye.[/]\n")
+            break
+        if not _dispatch(line, console):
+            break
+
+
+# ── entry point ───────────────────────────────────────────────────────────────
+
+def main() -> None:
+    if sys.platform == "win32":
+        # Force UTF-8 output so Unicode chars don't crash on Windows
+        try:
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[attr-defined]
+        except AttributeError:
+            pass
+        try:
+            os.system("chcp 65001 > nul 2>&1")
+        except Exception:
+            pass
+
+    console = Console(highlight=False)
+    repl(console)
+
+
+if __name__ == "__main__":
+    main()
