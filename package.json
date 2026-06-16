@@ -21,7 +21,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky",
-    "start": "tsx bin/orlix.ts",
+    "start": "python orlix.py",
+    "start:ts": "tsx bin/orlix.ts",
+    "py:install": "pip install -r requirements.txt",
     "example": "tsx examples/basic-workflow.ts",
     "clean": "rimraf dist"
   },
