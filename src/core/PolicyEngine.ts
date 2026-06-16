@@ -40,8 +40,9 @@ export class PolicyEngine {
   private _matchEvaluator(rule: string): Evaluator | undefined {
     if (this._rules.has(rule)) return this._rules.get(rule);
     for (const [key, fn] of this._rules) {
-      const pattern = key.replace(/_\d+d$/, '_');
-      if (rule.startsWith(pattern) && pattern !== key) return fn;
+      if (!key.includes('N')) continue;
+      const regex = new RegExp('^' + key.replace('N', '\\d+') + '$');
+      if (regex.test(rule)) return fn;
     }
     return undefined;
   }

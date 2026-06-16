@@ -1,21 +1,21 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { PolicyEngine }  from '../../src/core/PolicyEngine.js';
-import { WorldModel }    from '../../src/core/WorldModel.js';
-import { Memory }        from '../../src/core/Memory.js';
+import { PolicyEngine } from '../../src/core/PolicyEngine.js';
+import { WorldModel } from '../../src/core/WorldModel.js';
+import { Memory } from '../../src/core/Memory.js';
 import path from 'path';
-import os   from 'os';
+import os from 'os';
 
 const tmpMem = path.join(os.tmpdir(), `orlix-pe-mem-${Date.now()}.json`);
 
 describe('PolicyEngine', () => {
   let engine: PolicyEngine;
-  let world:  WorldModel;
-  let mem:    Memory;
+  let world: WorldModel;
+  let mem: Memory;
 
   beforeEach(() => {
     engine = new PolicyEngine();
-    world  = new WorldModel();
-    mem    = new Memory(tmpMem).load();
+    world = new WorldModel();
+    mem = new Memory(tmpMem).load();
   });
 
   it('returns no decisions when world model is empty', () => {
@@ -24,7 +24,7 @@ describe('PolicyEngine', () => {
 
   it('triggers alert_if_goal_overdue for overdue goals', () => {
     mem.addGoal({
-      name:     'Overdue task',
+      name: 'Overdue task',
       deadline: new Date(Date.now() - 86_400_000).toISOString().slice(0, 10),
       progress: 0.5,
     });
@@ -40,7 +40,7 @@ describe('PolicyEngine', () => {
     mem.addGoal({ name: 'Stale goal', progress: 0.2 });
     // manually set updatedAt in the past
     const goals = mem.getGoals();
-    mem.updateGoal(goals[0]!.id, { updatedAt: staleDate } as never);
+    mem.updateGoal(goals[0].id, { updatedAt: staleDate });
     mem.addPolicy({ rule: 'alert_if_goal_drift_gt_3d' });
     world.loadFromMemory(mem);
 
@@ -53,9 +53,12 @@ describe('PolicyEngine', () => {
     world.loadFromMemory(mem);
 
     engine.register('my_custom_rule', (_w, _p) => ({
-      intent: 'Custom triggered', context: 'test',
-      action: 'custom_action', priority: 5,
-      policy: 'my_custom_rule', policyVersion: 1,
+      intent: 'Custom triggered',
+      context: 'test',
+      action: 'custom_action',
+      priority: 5,
+      policy: 'my_custom_rule',
+      policyVersion: 1,
     }));
 
     const decisions = engine.evaluate(world);

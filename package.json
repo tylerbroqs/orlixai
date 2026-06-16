@@ -21,7 +21,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky",
-    "start": "node dist/bin/orlix.js",
+    "start": "tsx bin/orlix.ts",
     "example": "tsx examples/basic-workflow.ts",
     "clean": "rimraf dist"
   },
