@@ -76,53 +76,67 @@ COMMANDS: list[tuple[str, str]] = [
     ("exit",       "Quit ORLIX"),
 ]
 
-# ── pixel art glyphs — 7 wide × 9 tall ───────────────────────────────────────
-_GLYPHS: list[list[list[int]]] = [
-    # O — oval with diagonal corners
-    [[0,0,1,1,1,0,0],[0,1,1,0,1,1,0],[1,1,0,0,0,1,1],[1,0,0,0,0,0,1],
-     [1,0,0,0,0,0,1],[1,0,0,0,0,0,1],[1,1,0,0,0,1,1],[0,1,1,0,1,1,0],[0,0,1,1,1,0,0]],
-    # R — rounded bump + diagonal leg
-    [[1,1,1,1,1,0,0],[1,1,0,0,1,1,0],[1,1,0,0,0,1,1],[1,1,0,0,1,1,0],
-     [1,1,1,1,1,0,0],[1,1,1,0,0,0,0],[1,1,0,1,1,0,0],[1,1,0,0,1,1,0],[1,1,0,0,0,1,1]],
-    # L — 2px stem + solid double base
-    [[1,1,0,0,0,0,0],[1,1,0,0,0,0,0],[1,1,0,0,0,0,0],[1,1,0,0,0,0,0],
-     [1,1,0,0,0,0,0],[1,1,0,0,0,0,0],[1,1,0,0,0,0,0],[1,1,1,1,1,1,1],[1,1,1,1,1,1,1]],
-    # I — double top/bottom bars + wide centre
-    [[1,1,1,1,1,1,1],[1,1,1,1,1,1,1],[0,0,1,1,1,0,0],[0,0,1,1,1,0,0],
-     [0,0,1,1,1,0,0],[0,0,1,1,1,0,0],[0,0,1,1,1,0,0],[1,1,1,1,1,1,1],[1,1,1,1,1,1,1]],
-    # X — 2px arms, diamond crossing
-    [[1,1,0,0,0,1,1],[1,1,0,0,0,1,1],[0,1,1,0,1,1,0],[0,0,1,1,1,0,0],
-     [0,0,0,1,0,0,0],[0,0,1,1,1,0,0],[0,1,1,0,1,1,0],[1,1,0,0,0,1,1],[1,1,0,0,0,1,1]],
-]
-
-
-def _art_line(row: int) -> Text:
-    """Build one row of the ORLIX pixel art with orange gradient."""
-    # Vertical gradient: bright top → pure middle → dark bottom
-    if row <= 1:
-        color = O1
-    elif row >= 7:
-        color = O3
-    else:
-        color = O2
-
-    t = Text()
-    t.append("  ")  # left margin
-    for li, glyph in enumerate(_GLYPHS):
-        if li > 0:
-            t.append("  ")  # gap between letters
-        for pixel in glyph[row]:
-            t.append("██" if pixel else "  ", style=f"bold {color}" if pixel else "")
-    return t
-
+# ── ASCII art banner via pyfiglet ─────────────────────────────────────────────
+try:
+    from pyfiglet import Figlet as _Figlet
+    _figlet_available = True
+except ImportError:
+    _figlet_available = False
 
 def _art_banner() -> Text:
-    lines = [_art_line(r) for r in range(9)]
+    """ORLIX in orange block chars. Uses pyfiglet 'banner3' if available."""
+    if _figlet_available:
+        raw = _Figlet(font="banner3").renderText("ORLIX")
+        lines = raw.rstrip("\n").split("\n")
+        total = len(lines)
+        out = Text()
+        for i, line in enumerate(lines):
+            if i > 0:
+                out.append("\n")
+            # gradient: bright top → orange middle → dim bottom
+            if i < 2:
+                color = O1
+            elif i >= total - 2:
+                color = O3
+            else:
+                color = O2
+            out.append("  ")  # left margin
+            for ch in line:
+                if ch == "#":
+                    out.append("█", style=f"bold {color}")
+                else:
+                    out.append(ch)
+        return out
+
+    # ── fallback: hand-drawn 7×9 glyphs ──────────────────────────────────────
+    G = [
+        # O
+        [[0,0,1,1,1,0,0],[0,1,1,0,1,1,0],[1,1,0,0,0,1,1],[1,0,0,0,0,0,1],
+         [1,0,0,0,0,0,1],[1,0,0,0,0,0,1],[1,1,0,0,0,1,1],[0,1,1,0,1,1,0],[0,0,1,1,1,0,0]],
+        # R
+        [[1,1,1,1,1,0,0],[1,1,0,0,1,1,0],[1,1,0,0,0,1,1],[1,1,0,0,1,1,0],
+         [1,1,1,1,1,0,0],[1,1,1,0,0,0,0],[1,1,0,1,1,0,0],[1,1,0,0,1,1,0],[1,1,0,0,0,1,1]],
+        # L
+        [[1,1,0,0,0,0,0],[1,1,0,0,0,0,0],[1,1,0,0,0,0,0],[1,1,0,0,0,0,0],
+         [1,1,0,0,0,0,0],[1,1,0,0,0,0,0],[1,1,0,0,0,0,0],[1,1,1,1,1,1,1],[1,1,1,1,1,1,1]],
+        # I
+        [[1,1,1,1,1,1,1],[1,1,1,1,1,1,1],[0,0,1,1,1,0,0],[0,0,1,1,1,0,0],
+         [0,0,1,1,1,0,0],[0,0,1,1,1,0,0],[0,0,1,1,1,0,0],[1,1,1,1,1,1,1],[1,1,1,1,1,1,1]],
+        # X
+        [[1,1,0,0,0,1,1],[1,1,0,0,0,1,1],[0,1,1,0,1,1,0],[0,0,1,1,1,0,0],
+         [0,0,0,1,0,0,0],[0,0,1,1,1,0,0],[0,1,1,0,1,1,0],[1,1,0,0,0,1,1],[1,1,0,0,0,1,1]],
+    ]
     out = Text()
-    for i, line in enumerate(lines):
-        if i > 0:
+    for r in range(9):
+        if r > 0:
             out.append("\n")
-        out.append_text(line)
+        color = O1 if r <= 1 else (O3 if r >= 7 else O2)
+        out.append("  ")
+        for li, glyph in enumerate(G):
+            if li > 0:
+                out.append("  ")
+            for pixel in glyph[r]:
+                out.append("██" if pixel else "  ", style=f"bold {color}" if pixel else "")
     return out
 
 
@@ -149,10 +163,9 @@ def save_config(cfg: dict) -> None:
     CONFIG_FILE.write_text(json.dumps(cfg, indent=2), "utf-8")
 
 
-# ── UI panels ─────────────────────────────────────────────────────────────────
+# ── dashboard components ───────────────────────────────────────────────────────
 
-def _info_panel(cfg: dict, mem: dict) -> Panel:
-    """Provider / model / status — like CLAUDE's info box."""
+def _status_table(cfg: dict, mem: dict) -> Table:
     llm  = cfg.get("llm")
     opt  = cfg.get("keys", {})
     connected = sum(1 for _, b, k in DATA_SOURCES if b or (k and opt.get(k)))
@@ -160,45 +173,93 @@ def _info_panel(cfg: dict, mem: dict) -> Panel:
     facts    = len(mem["facts"])
     policies = len(mem["policies"])
 
-    t = Table(box=None, show_header=False, padding=(0, 2, 0, 0), show_edge=False)
-    t.add_column(style=M,             min_width=12)
-    t.add_column(style=f"bold {W}",   min_width=30)
+    rows: list[tuple[bool, str, str]] = [
+        (bool(llm),  "LLM",          llm["model"] if llm else "not configured"),
+        (True,       "Memory",        f"{goals}g  {facts}f  {policies}p"),
+        (True,       "Governance",    "supervised"),
+        (True,       "Data Sources",  f"{connected}/{len(DATA_SOURCES)} connected"),
+    ]
 
-    if llm:
-        pid   = llm.get("provider", "")
-        pname = next((n for p, n, _ in LLM_PROVIDERS if p == pid), pid)
-        t.add_row("Provider", Text(pname,          style=f"bold {O2}"))
-        t.add_row("Model",    Text(llm["model"],   style=W))
-        t.add_row("Memory",   Text(f"{goals}g  {facts}f  {policies}p", style=M))
-    else:
-        t.add_row("Provider", Text("not configured", style=R))
-        t.add_row("Model",    Text("—",             style=M))
-        t.add_row("Memory",   Text(f"{goals}g  {facts}f  {policies}p", style=M))
+    t = Table(box=None, show_header=True, header_style=f"bold {O2}",
+              padding=(0, 1, 0, 0), show_edge=False, expand=False)
+    t.add_column("STATUS",  min_width=15)
+    t.add_column("",        min_width=20)
 
-    t.add_row("Sources",  Text(f"{connected}/{len(DATA_SOURCES)} connected", style=G))
-
-    return Panel(t, box=box.ROUNDED, border_style=OD, padding=(0, 1))
+    for ok, label, detail in rows:
+        t.add_row(
+            Text(f"{'●' if ok else '○'}  {label}", style=f"bold {G if ok else R}"),
+            Text(detail, style=G if ok else R),
+        )
+    return t
 
 
-def _status_bar(cfg: dict) -> Panel:
-    """Single-line status — like CLAUDE's 'cloud  Ready' bar."""
-    llm = cfg.get("llm")
+def _commands_table() -> Table:
+    t = Table(box=None, show_header=True, header_style=f"bold {O2}",
+              padding=(0, 1, 0, 0), show_edge=False, expand=False)
+    t.add_column("COMMANDS", min_width=12)
+    t.add_column("",         min_width=22)
+
+    for cmd, desc in COMMANDS:
+        t.add_row(Text(cmd, style=f"bold {W}"), Text(desc, style=M))
+    return t
+
+
+def _dashboard(cfg: dict, mem: dict) -> Table:
+    outer = Table(box=None, show_header=False, padding=(0, 2, 0, 0),
+                  show_edge=False, expand=False)
+    outer.add_column(min_width=38)
+    outer.add_column(min_width=38)
+    outer.add_row(_status_table(cfg, mem), _commands_table())
+    return outer
+
+
+def _sources_panel(cfg: dict) -> Panel:
+    opt = cfg.get("keys", {})
+    builtin_row = Text()
+    optional_row = Text()
+    first_b = first_o = True
+
+    for name, builtin, key in DATA_SOURCES:
+        active = builtin or bool(key and opt.get(key))
+        if builtin:
+            if not first_b:
+                builtin_row.append("   ")
+            first_b = False
+            builtin_row.append("● ", style=f"bold {G}")
+            builtin_row.append(name, style=W)
+        else:
+            if not first_o:
+                optional_row.append("   ")
+            first_o = False
+            optional_row.append("● " if active else "○ ", style=f"bold {G if active else B}")
+            optional_row.append(name, style=W if active else M)
+
+    content = Text()
+    content.append_text(builtin_row)
+    content.append("\n")
+    content.append_text(optional_row)
+
+    return Panel(content, title=f"[bold {O2}]CONNECTED SOURCES[/]",
+                 border_style=OD, box=box.SIMPLE_HEAVY, padding=(0, 1))
+
+
+def _footer(cfg: dict) -> Text:
     t = Text()
-    if llm:
-        t.append("●  ", style=f"bold {G}")
-        pid   = llm.get("provider", "")
-        pname = next((n for p, n, _ in LLM_PROVIDERS if p == pid), pid)
-        t.append(f"{pname}", style=f"bold {W}")
-        t.append("   Ready — type ", style=M)
-        t.append("/help", style=f"bold {O2}")
-        t.append(" to begin", style=M)
+    if not cfg.get("llm"):
+        t.append("  /setup", style=f"bold {O2}")
+        t.append(" — connect your first LLM provider    ", style=M)
+        t.append("/help", style=f"bold {W}")
+        t.append(" for all commands", style=M)
     else:
-        t.append("○  ", style=f"bold {R}")
-        t.append("LLM not configured — type ", style=M)
-        t.append("/setup", style=f"bold {O2}")
-        t.append(" to connect your first provider", style=M)
-
-    return Panel(t, box=box.ROUNDED, border_style=OD, padding=(0, 1))
+        pid   = cfg["llm"].get("provider", "")
+        pname = next((n for p, n, _ in LLM_PROVIDERS if p == pid), pid)
+        t.append(f"  {pname} ready", style=f"bold {G}")
+        t.append("    type ", style=M)
+        t.append("chat", style=f"bold {O2}")
+        t.append(" to begin    ", style=M)
+        t.append("/help", style=f"bold {W}")
+        t.append(" for all commands", style=M)
+    return t
 
 
 # ── startup screen ────────────────────────────────────────────────────────────
@@ -208,26 +269,13 @@ def startup(console: Console) -> None:
     mem = load_memory()
 
     console.print()
-    # Big pixel art
-    console.print(_art_banner())
+    console.print(_art_banner())                                   # big ORLIX art
     console.print()
-    # Subtitle
-    sub = Text()
-    sub.append("  • ", style=M)
-    sub.append("Personal AI Operating System", style=f"bold {W}")
-    sub.append(" •", style=M)
-    console.print(sub)
+    console.print(Padding(_dashboard(cfg, mem), (0, 0, 0, 2)))    # status + commands
     console.print()
-    # Info panel
-    console.print(Padding(_info_panel(cfg, mem), (0, 0, 0, 2)))
-    console.print()
-    # Status bar
-    console.print(Padding(_status_bar(cfg), (0, 0, 0, 2)))
-    # Footer
-    console.print()
-    console.print(
-        f"  [{M}]orlix v{VERSION}[/]"
-    )
+    console.print(_sources_panel(cfg))                             # connected sources
+    console.print(Rule(style=B))
+    console.print(_footer(cfg))
     console.print()
 
 
@@ -236,10 +284,8 @@ def startup(console: Console) -> None:
 def run_setup(console: Console) -> None:
     cfg = load_config()
     console.print()
-    console.print(Panel(
-        f"[bold {O2}]ORLIX SETUP — Bring Your Own Key[/]",
-        box=box.HEAVY, border_style=O2, padding=(0, 2),
-    ))
+    console.print(Panel(f"[bold {O2}]ORLIX SETUP — Bring Your Own Key[/]",
+                        box=box.HEAVY, border_style=O2, padding=(0, 2)))
     console.print()
     console.print(f"  [{O2}]Select LLM provider:[/]\n")
 
@@ -265,9 +311,9 @@ def run_setup(console: Console) -> None:
         if key:
             cfg["llm"] = {"provider": pid, "model": pmodel, "key": key}
             save_config(cfg)
-            console.print(f"\n  [bold {G}]✓[/]  [{O2}]{pname}[/] configured  [{M}]→ {pmodel}[/]")
+            console.print(f"\n  [bold {G}]✓[/]  [{O2}]{pname}[/]  [{M}]→ {pmodel}[/]")
         else:
-            console.print(f"  [{M}]No key entered — skipped.[/]")
+            console.print(f"  [{M}]No key entered.[/]")
 
     console.print()
     console.print(f"  [{M}]Optional data-source keys (Enter to skip):[/]\n")
@@ -290,26 +336,22 @@ def run_setup(console: Console) -> None:
 
 # ── REPL ──────────────────────────────────────────────────────────────────────
 
-def _help(console: Console) -> None:
-    console.print()
-    t = Table(box=None, show_header=False, padding=(0, 2, 0, 2))
-    t.add_column(style=f"bold {W}", min_width=14)
-    t.add_column(style=M)
-    for cmd, desc in COMMANDS:
-        t.add_row(cmd, desc)
-    console.print(Padding(t, (0, 0, 0, 2)))
-    console.print()
-
-
 def _dispatch(line: str, console: Console) -> bool:
     cmd = line.strip().lstrip("/").lower()
     if not cmd:
         return True
-    if cmd in ("exit", "quit", "q", "bye"):
+    if cmd in ("exit", "quit", "q"):
         console.print(f"\n  [{M}]Goodbye.[/]\n")
         return False
     if cmd in ("help", "?", "h"):
-        _help(console)
+        console.print()
+        t = Table(box=None, show_header=False, padding=(0, 2, 0, 2))
+        t.add_column(style=f"bold {W}", min_width=14)
+        t.add_column(style=M)
+        for c, d in COMMANDS:
+            t.add_row(c, d)
+        console.print(Padding(t, (0, 0, 0, 2)))
+        console.print()
         return True
     if cmd == "setup":
         run_setup(console)
@@ -322,9 +364,7 @@ def _dispatch(line: str, console: Console) -> bool:
     if cmd in known:
         console.print(f"  [{M}]`{cmd}` is not yet implemented in this preview.[/]")
     else:
-        console.print(
-            f"  [{R}]Unknown:[/] [{W}]{cmd}[/]  (type [{O2}]help[/] or [{O2}]exit[/])"
-        )
+        console.print(f"  [{R}]Unknown:[/] [{W}]{cmd}[/]  (type [{O2}]help[/])")
     return True
 
 
