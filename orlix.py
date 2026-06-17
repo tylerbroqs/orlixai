@@ -66,14 +66,15 @@ DATA_SOURCES: list[tuple[str, bool, str | None]] = [
 ]
 
 COMMANDS: list[tuple[str, str]] = [
-    ("chat",       "Start AI conversation"),
-    ("memory",     "View / edit memory store"),
-    ("governance", "Goals, facts & policies"),
-    ("research",   "Search data sources"),
-    ("report",     "Generate reports"),
-    ("setup",      "Configure LLM & API keys"),
-    ("config",     "Edit configuration"),
-    ("exit",       "Quit ORLIX"),
+    ("chat",             "Start AI conversation"),
+    ("memory",           "View goals, facts & policies"),
+    ("add goal <name>",  "Add a goal  [--deadline YYYY-MM-DD]"),
+    ("add fact <text>",  "Store a fact"),
+    ("add policy <rule>","Activate a policy rule"),
+    ("progress <n> <n%>","Update goal progress"),
+    ("governance",       "View governance state"),
+    ("setup",            "Configure LLM & API keys"),
+    ("exit",             "Quit ORLIX"),
 ]
 
 # ── ASCII art banner via pyfiglet ─────────────────────────────────────────────
@@ -262,6 +263,300 @@ def _footer(cfg: dict) -> Text:
     return t
 
 
+# ── memory commands ───────────────────────────────────────────────────────────
+
+def _new_id() -> str:
+    import random, time
+    return f"{int(time.time()*1000):x}-{random.randint(0,0xfffff):05x}"
+
+def _now() -> str:
+    from datetime import datetime, timezone
+    return datetime.now(timezone.utc).isoformat()
+
+def cmd_memory(console: Console) -> None:
+    mem = load_memory()
+    goals    = mem["goals"]
+    facts    = mem["facts"]
+    policies = mem["policies"]
+
+    console.print()
+
+    # ── goals ──────────────────────────────────────────────────────────────────
+    console.print(f"  [bold {O2}]GOALS[/]  [{M}]({len(goals)})[/]")
+    if not goals:
+        console.print(f"  [{M}]No goals yet.  Try: add goal Launch product --deadline 2026-09-01[/]")
+    else:
+        for g in goals:
+            pct  = int((g.get("progress") or 0) * 100)
+            bar  = "█" * (pct // 10) + "░" * (10 - pct // 10)
+            dl   = g.get("deadline") or "no deadline"
+            over = g.get("deadline") and g["deadline"] < _now()[:10]
+            console.print(
+                f"  [{O2}]{g['name']}[/]  [{M}]{dl}{'  ⚠ overdue' if over else ''}[/]"
+            )
+            console.print(f"    [{G}]{bar}[/] {pct}%   [{M}]{g['id']}[/]")
+    console.print()
+
+    # ── facts ──────────────────────────────────────────────────────────────────
+    console.print(f"  [bold {O2}]FACTS[/]  [{M}]({len(facts)})[/]")
+    if not facts:
+        console.print(f"  [{M}]No facts yet.  Try: add fact team size is 4 people[/]")
+    else:
+        for f in facts:
+            console.print(f"  [{W}]◆[/] {f['content']}  [{M}][{f.get('source','manual')}][/]")
+    console.print()
+
+    # ── policies ───────────────────────────────────────────────────────────────
+    console.print(f"  [bold {O2}]POLICIES[/]  [{M}]({len(policies)})[/]")
+    if not policies:
+        console.print(f"  [{M}]No policies yet.  Try: add policy alert_if_goal_overdue[/]")
+    else:
+        for p in policies:
+            dot = f"[{G}]●[/]" if p.get("status") == "active" else f"[{M}]○[/]"
+            console.print(f"  {dot} [{W}]{p['rule']}[/]  [{M}]v{p.get('version',1)}  {p.get('status','active')}[/]")
+    console.print()
+
+
+def cmd_add_goal(console: Console, args: str) -> None:
+    name = args.strip()
+    if not name:
+        console.print(f"  [{R}]Usage:[/] add goal <name> [--deadline YYYY-MM-DD]")
+        return
+    import re
+    dl_match = re.search(r"--deadline\s+(\d{4}-\d{2}-\d{2})", name)
+    deadline = dl_match.group(1) if dl_match else None
+    name = re.sub(r"--deadline\s+\S+", "", name).strip()
+
+    mem  = load_memory()
+    goal = {
+        "id":        _new_id(),
+        "name":      name,
+        "deadline":  deadline,
+        "progress":  0,
+        "createdAt": _now(),
+        "updatedAt": _now(),
+    }
+    mem["goals"].append(goal)
+    _save_memory(mem)
+    console.print(f"\n  [bold {G}]✓[/]  Goal added: [{O2}]{name}[/]" +
+                  (f"  [{M}]deadline: {deadline}[/]" if deadline else ""))
+    console.print(f"     [{M}]id: {goal['id']}[/]\n")
+
+
+def cmd_add_fact(console: Console, args: str) -> None:
+    content = args.strip()
+    if not content:
+        console.print(f"  [{R}]Usage:[/] add fact <content>")
+        return
+    mem  = load_memory()
+    fact = {"id": _new_id(), "content": content, "source": "user",
+            "confidence": 1.0, "createdAt": _now()}
+    mem["facts"].append(fact)
+    _save_memory(mem)
+    console.print(f"\n  [bold {G}]✓[/]  Fact stored: [{W}]{content}[/]\n")
+
+
+def cmd_add_policy(console: Console, args: str) -> None:
+    rule = args.strip()
+    if not rule:
+        console.print(f"  [{R}]Usage:[/] add policy <rule>")
+        return
+    mem    = load_memory()
+    ver    = sum(1 for p in mem["policies"] if p["rule"] == rule) + 1
+    policy = {"id": _new_id(), "rule": rule, "version": ver,
+              "status": "active", "priority": 5,
+              "createdAt": _now(), "updatedAt": _now()}
+    mem["policies"].append(policy)
+    _save_memory(mem)
+    console.print(f"\n  [bold {G}]✓[/]  Policy added: [{W}]{rule}[/]  [{M}]v{ver}[/]\n")
+
+
+def cmd_progress(console: Console, args: str) -> None:
+    import re
+    m = re.match(r"(.+?)\s+(\d+(?:\.\d+)?)\s*%?$", args.strip())
+    if not m:
+        console.print(f"  [{R}]Usage:[/] progress <goal name or id> <0-100>")
+        return
+    query, raw = m.group(1).strip(), float(m.group(2))
+    pct = raw / 100 if raw > 1 else raw
+
+    mem   = load_memory()
+    query_lower = query.lower()
+    goal  = next(
+        (g for g in mem["goals"]
+         if query_lower in g["name"].lower() or g["id"].startswith(query)),
+        None,
+    )
+    if not goal:
+        console.print(f"  [{R}]Goal not found:[/] {query}")
+        return
+    goal["progress"]  = pct
+    goal["updatedAt"] = _now()
+    _save_memory(mem)
+    bar = "█" * int(pct * 10) + "░" * (10 - int(pct * 10))
+    console.print(f"\n  [bold {G}]✓[/]  [{O2}]{goal['name']}[/]")
+    console.print(f"     [{G}]{bar}[/] {int(pct*100)}%\n")
+
+
+def _save_memory(mem: dict) -> None:
+    ORLIX_DIR.mkdir(parents=True, exist_ok=True)
+    MEMORY_FILE.write_text(json.dumps(mem, indent=2), "utf-8")
+
+
+# ── chat ───────────────────────────────────────────────────────────────────────
+
+def cmd_chat(console: Console) -> None:
+    cfg = load_config()
+    llm = cfg.get("llm")
+    if not llm:
+        console.print(f"\n  [{R}]No LLM configured.[/]  Run [{O2}]setup[/] first.\n")
+        return
+
+    provider = llm.get("provider", "")
+    model    = llm.get("model", "")
+    api_key  = llm.get("key", "")
+
+    console.print()
+    console.print(Panel(
+        f"[{M}]Provider:[/] [{O2}]{provider}[/]   [{M}]Model:[/] [{W}]{model}[/]\n"
+        f"[{M}]Type your message. Empty line to send. [{O2}]exit[/] [{M}]to leave chat.[/]",
+        border_style=OD, box=box.ROUNDED, padding=(0, 2),
+    ))
+    console.print()
+
+    history: list[dict] = []
+
+    while True:
+        lines: list[str] = []
+        try:
+            while True:
+                chunk = console.input(f"  [{W}]You[/] [{M}]›[/] ")
+                if chunk.strip().lower() in ("exit", "quit", "/exit"):
+                    console.print(f"\n  [{M}]Leaving chat.[/]\n")
+                    return
+                if chunk == "":
+                    break
+                lines.append(chunk)
+        except (EOFError, KeyboardInterrupt):
+            console.print(f"\n  [{M}]Leaving chat.[/]\n")
+            return
+
+        user_msg = "\n".join(lines).strip()
+        if not user_msg:
+            continue
+
+        history.append({"role": "user", "content": user_msg})
+
+        # ── call API ──────────────────────────────────────────────────────────
+        reply = _call_llm(provider, model, api_key, history, console)
+        if reply:
+            history.append({"role": "assistant", "content": reply})
+        console.print()
+
+
+def _call_llm(provider: str, model: str, api_key: str,
+              history: list[dict], console: Console) -> str | None:
+    import urllib.request, urllib.error
+
+    console.print(f"\n  [{O2}]ORLIX[/] [{M}]›[/] ", end="")
+
+    try:
+        if provider == "anthropic":
+            return _call_anthropic(model, api_key, history, console)
+        elif provider == "openai":
+            return _call_openai("https://api.openai.com/v1/chat/completions",
+                                model, api_key, history, console)
+        elif provider == "google":
+            return _call_google(model, api_key, history, console)
+        elif provider == "xai":
+            return _call_openai("https://api.x.ai/v1/chat/completions",
+                                model, api_key, history, console)
+        elif provider == "deepseek":
+            return _call_openai("https://api.deepseek.com/chat/completions",
+                                model, api_key, history, console)
+        elif provider == "moonshot":
+            return _call_openai("https://api.moonshot.cn/v1/chat/completions",
+                                model, api_key, history, console)
+        elif provider == "minimax":
+            return _call_openai("https://api.minimax.chat/v1/text/chatcompletion_v2",
+                                model, api_key, history, console)
+        elif provider == "zhipu":
+            return _call_openai("https://open.bigmodel.cn/api/paas/v4/chat/completions",
+                                model, api_key, history, console)
+        else:
+            console.print(f"[{R}]Unsupported provider: {provider}[/]")
+            return None
+    except Exception as e:
+        console.print(f"\n  [{R}]Error: {e}[/]\n")
+        return None
+
+
+def _call_anthropic(model: str, api_key: str,
+                    history: list[dict], console: Console) -> str:
+    import urllib.request, json as _json
+    payload = _json.dumps({
+        "model":      model,
+        "max_tokens": 1024,
+        "messages":   history,
+    }).encode()
+    req = urllib.request.Request(
+        "https://api.anthropic.com/v1/messages",
+        data=payload,
+        headers={
+            "x-api-key":         api_key,
+            "anthropic-version": "2023-06-01",
+            "content-type":      "application/json",
+        },
+    )
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        data = _json.loads(resp.read())
+    text = data["content"][0]["text"]
+    console.print(f"[{W}]{text}[/]")
+    return text
+
+
+def _call_openai(url: str, model: str, api_key: str,
+                 history: list[dict], console: Console) -> str:
+    import urllib.request, json as _json
+    payload = _json.dumps({
+        "model":    model,
+        "messages": history,
+    }).encode()
+    req = urllib.request.Request(
+        url, data=payload,
+        headers={"Authorization": f"Bearer {api_key}",
+                 "Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        data = _json.loads(resp.read())
+    text = data["choices"][0]["message"]["content"]
+    console.print(f"[{W}]{text}[/]")
+    return text
+
+
+def _call_google(model: str, api_key: str,
+                 history: list[dict], console: Console) -> str:
+    import urllib.request, json as _json
+    # convert openai-style history to Google format
+    contents = [
+        {"role": "user" if m["role"] == "user" else "model",
+         "parts": [{"text": m["content"]}]}
+        for m in history
+    ]
+    payload = _json.dumps({"contents": contents}).encode()
+    url = (f"https://generativelanguage.googleapis.com/v1beta/models/"
+           f"{model}:generateContent?key={api_key}")
+    req = urllib.request.Request(
+        url, data=payload,
+        headers={"Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        data = _json.loads(resp.read())
+    text = data["candidates"][0]["content"]["parts"][0]["text"]
+    console.print(f"[{W}]{text}[/]")
+    return text
+
+
 # ── startup screen ────────────────────────────────────────────────────────────
 
 def startup(console: Console) -> None:
@@ -360,9 +655,30 @@ def _dispatch(line: str, console: Console) -> bool:
         console.clear()
         startup(console)
         return True
+    if cmd in ("memory", "mem", "m"):
+        cmd_memory(console)
+        return True
+    if cmd == "chat":
+        cmd_chat(console)
+        return True
+    if cmd.startswith("add goal "):
+        cmd_add_goal(console, line.strip()[9:])
+        return True
+    if cmd.startswith("add fact "):
+        cmd_add_fact(console, line.strip()[9:])
+        return True
+    if cmd.startswith("add policy "):
+        cmd_add_policy(console, line.strip()[11:])
+        return True
+    if cmd.startswith("progress "):
+        cmd_progress(console, line.strip()[9:])
+        return True
+    if cmd == "governance":
+        cmd_memory(console)   # shows goals + policies
+        return True
     known = {c for c, _ in COMMANDS}
     if cmd in known:
-        console.print(f"  [{M}]`{cmd}` is not yet implemented in this preview.[/]")
+        console.print(f"  [{M}]`{cmd}` — coming soon.[/]")
     else:
         console.print(f"  [{R}]Unknown:[/] [{W}]{cmd}[/]  (type [{O2}]help[/])")
     return True
