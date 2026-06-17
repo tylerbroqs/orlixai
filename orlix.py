@@ -86,7 +86,7 @@ except ImportError:
 def _art_banner() -> Text:
     """ORLIX in orange block chars. Uses pyfiglet 'banner3' if available."""
     if _figlet_available:
-        raw = _Figlet(font="banner3").renderText("ORLIX")
+        raw = _Figlet(font="ansi_shadow").renderText("ORLIX")
         lines = raw.rstrip("\n").split("\n")
         total = len(lines)
         out = Text()
@@ -102,10 +102,10 @@ def _art_banner() -> Text:
                 color = O2
             out.append("  ")  # left margin
             for ch in line:
-                if ch == "#":
-                    out.append("█", style=f"bold {color}")
+                if ch != " ":
+                    out.append(ch, style=f"bold {color}")
                 else:
-                    out.append(ch)
+                    out.append(" ")
         return out
 
     # ── fallback: hand-drawn 7×9 glyphs ──────────────────────────────────────
