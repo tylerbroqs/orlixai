@@ -405,6 +405,32 @@ def _save_memory(mem: dict) -> None:
 
 # ── chat ───────────────────────────────────────────────────────────────────────
 
+def _build_system_prompt(mem: dict) -> str:
+    parts = [
+        "You are ORLIX, a personal AI operating system assistant.",
+        "You have access to the user's memory context below.",
+        "Always reference it when relevant.",
+    ]
+    goals = mem.get("goals", [])
+    if goals:
+        parts.append("\nGOALS:")
+        for g in goals:
+            pct = int((g.get("progress") or 0) * 100)
+            dl  = f"  deadline: {g['deadline']}" if g.get("deadline") else ""
+            parts.append(f"  - {g['name']}{dl}  [{pct}% complete]")
+    facts = mem.get("facts", [])
+    if facts:
+        parts.append("\nFACTS:")
+        for f in facts:
+            parts.append(f"  - {f['content']}")
+    policies = [p for p in mem.get("policies", []) if p.get("status") == "active"]
+    if policies:
+        parts.append("\nACTIVE POLICIES:")
+        for p in policies:
+            parts.append(f"  - {p['rule']}")
+    return "\n".join(parts)
+
+
 def cmd_chat(console: Console) -> None:
     cfg = load_config()
     llm = cfg.get("llm")
@@ -415,11 +441,22 @@ def cmd_chat(console: Console) -> None:
     provider = llm.get("provider", "")
     model    = llm.get("model", "")
     api_key  = llm.get("key", "")
+    mem      = load_memory()
+    system   = _build_system_prompt(mem)
+
+    g_count = len(mem["goals"])
+    f_count = len(mem["facts"])
+    p_count = len(mem["policies"])
+    ctx_line = (f"[{M}]Memory context:[/] "
+                f"[{O2}]{g_count}[/][{M}] goals  [/]"
+                f"[{O2}]{f_count}[/][{M}] facts  [/]"
+                f"[{O2}]{p_count}[/][{M}] policies — AI knows your context[/]")
 
     console.print()
     console.print(Panel(
         f"[{M}]Provider:[/] [{O2}]{provider}[/]   [{M}]Model:[/] [{W}]{model}[/]\n"
-        f"[{M}]Type your message. Empty line to send. [{O2}]exit[/] [{M}]to leave chat.[/]",
+        f"{ctx_line}\n"
+        f"[{M}]Type message + Enter. Blank line to send multi-line. [{O2}]exit[/][{M}] to leave.[/]",
         border_style=OD, box=box.ROUNDED, padding=(0, 2),
     ))
     console.print()
@@ -435,8 +472,10 @@ def cmd_chat(console: Console) -> None:
                     console.print(f"\n  [{M}]Leaving chat.[/]\n")
                     return
                 if chunk == "":
-                    break
-                lines.append(chunk)
+                    if lines:
+                        break
+                else:
+                    lines.append(chunk)
         except (EOFError, KeyboardInterrupt):
             console.print(f"\n  [{M}]Leaving chat.[/]\n")
             return
@@ -447,56 +486,54 @@ def cmd_chat(console: Console) -> None:
 
         history.append({"role": "user", "content": user_msg})
 
-        # ── call API ──────────────────────────────────────────────────────────
-        reply = _call_llm(provider, model, api_key, history, console)
+        console.print(f"\n  [{O2}]ORLIX[/] [{M}]›[/] ", end="")
+        reply = _call_llm(provider, model, api_key, system, history, console)
         if reply:
             history.append({"role": "assistant", "content": reply})
         console.print()
 
 
-def _call_llm(provider: str, model: str, api_key: str,
+def _call_llm(provider: str, model: str, api_key: str, system: str,
               history: list[dict], console: Console) -> str | None:
-    import urllib.request, urllib.error
-
-    console.print(f"\n  [{O2}]ORLIX[/] [{M}]›[/] ", end="")
-
     try:
         if provider == "anthropic":
-            return _call_anthropic(model, api_key, history, console)
-        elif provider == "openai":
-            return _call_openai("https://api.openai.com/v1/chat/completions",
-                                model, api_key, history, console)
+            return _stream_anthropic(model, api_key, system, history)
         elif provider == "google":
-            return _call_google(model, api_key, history, console)
+            return _stream_google(model, api_key, system, history)
+        elif provider == "openai":
+            return _stream_openai("https://api.openai.com/v1/chat/completions",
+                                  model, api_key, system, history)
         elif provider == "xai":
-            return _call_openai("https://api.x.ai/v1/chat/completions",
-                                model, api_key, history, console)
+            return _stream_openai("https://api.x.ai/v1/chat/completions",
+                                  model, api_key, system, history)
         elif provider == "deepseek":
-            return _call_openai("https://api.deepseek.com/chat/completions",
-                                model, api_key, history, console)
+            return _stream_openai("https://api.deepseek.com/chat/completions",
+                                  model, api_key, system, history)
         elif provider == "moonshot":
-            return _call_openai("https://api.moonshot.cn/v1/chat/completions",
-                                model, api_key, history, console)
+            return _stream_openai("https://api.moonshot.cn/v1/chat/completions",
+                                  model, api_key, system, history)
         elif provider == "minimax":
-            return _call_openai("https://api.minimax.chat/v1/text/chatcompletion_v2",
-                                model, api_key, history, console)
+            return _stream_openai("https://api.minimax.chat/v1/text/chatcompletion_v2",
+                                  model, api_key, system, history)
         elif provider == "zhipu":
-            return _call_openai("https://open.bigmodel.cn/api/paas/v4/chat/completions",
-                                model, api_key, history, console)
+            return _stream_openai("https://open.bigmodel.cn/api/paas/v4/chat/completions",
+                                  model, api_key, system, history)
         else:
-            console.print(f"[{R}]Unsupported provider: {provider}[/]")
+            print(f"Unsupported provider: {provider}")
             return None
     except Exception as e:
-        console.print(f"\n  [{R}]Error: {e}[/]\n")
+        print(f"\n  Error: {e}\n")
         return None
 
 
-def _call_anthropic(model: str, api_key: str,
-                    history: list[dict], console: Console) -> str:
+def _stream_anthropic(model: str, api_key: str, system: str,
+                      history: list[dict]) -> str:
     import urllib.request, json as _json
     payload = _json.dumps({
         "model":      model,
-        "max_tokens": 1024,
+        "max_tokens": 2048,
+        "stream":     True,
+        "system":     system,
         "messages":   history,
     }).encode()
     req = urllib.request.Request(
@@ -508,53 +545,108 @@ def _call_anthropic(model: str, api_key: str,
             "content-type":      "application/json",
         },
     )
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        data = _json.loads(resp.read())
-    text = data["content"][0]["text"]
-    console.print(f"[{W}]{text}[/]")
-    return text
+    full = ""
+    with urllib.request.urlopen(req, timeout=120) as resp:
+        for raw in resp:
+            line = raw.decode("utf-8").strip()
+            if not line.startswith("data:"):
+                continue
+            data_str = line[5:].strip()
+            if data_str in ("[DONE]", ""):
+                continue
+            try:
+                ev = _json.loads(data_str)
+            except _json.JSONDecodeError:
+                continue
+            if ev.get("type") == "content_block_delta":
+                chunk = ev.get("delta", {}).get("text", "")
+                if chunk:
+                    full += chunk
+                    sys.stdout.write(chunk)
+                    sys.stdout.flush()
+    print()
+    return full
 
 
-def _call_openai(url: str, model: str, api_key: str,
-                 history: list[dict], console: Console) -> str:
+def _stream_openai(url: str, model: str, api_key: str, system: str,
+                   history: list[dict]) -> str:
     import urllib.request, json as _json
+    messages = [{"role": "system", "content": system}] + history
     payload = _json.dumps({
         "model":    model,
-        "messages": history,
+        "messages": messages,
+        "stream":   True,
     }).encode()
     req = urllib.request.Request(
         url, data=payload,
         headers={"Authorization": f"Bearer {api_key}",
                  "Content-Type": "application/json"},
     )
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        data = _json.loads(resp.read())
-    text = data["choices"][0]["message"]["content"]
-    console.print(f"[{W}]{text}[/]")
-    return text
+    full = ""
+    with urllib.request.urlopen(req, timeout=120) as resp:
+        for raw in resp:
+            line = raw.decode("utf-8").strip()
+            if not line.startswith("data:"):
+                continue
+            data_str = line[5:].strip()
+            if data_str in ("[DONE]", ""):
+                continue
+            try:
+                ev = _json.loads(data_str)
+            except _json.JSONDecodeError:
+                continue
+            chunk = (ev.get("choices", [{}])[0]
+                       .get("delta", {})
+                       .get("content", "") or "")
+            if chunk:
+                full += chunk
+                sys.stdout.write(chunk)
+                sys.stdout.flush()
+    print()
+    return full
 
 
-def _call_google(model: str, api_key: str,
-                 history: list[dict], console: Console) -> str:
+def _stream_google(model: str, api_key: str, system: str,
+                   history: list[dict]) -> str:
     import urllib.request, json as _json
-    # convert openai-style history to Google format
     contents = [
         {"role": "user" if m["role"] == "user" else "model",
          "parts": [{"text": m["content"]}]}
         for m in history
     ]
-    payload = _json.dumps({"contents": contents}).encode()
+    payload = _json.dumps({
+        "contents":          contents,
+        "systemInstruction": {"parts": [{"text": system}]},
+    }).encode()
     url = (f"https://generativelanguage.googleapis.com/v1beta/models/"
-           f"{model}:generateContent?key={api_key}")
+           f"{model}:streamGenerateContent?key={api_key}&alt=sse")
     req = urllib.request.Request(
         url, data=payload,
         headers={"Content-Type": "application/json"},
     )
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        data = _json.loads(resp.read())
-    text = data["candidates"][0]["content"]["parts"][0]["text"]
-    console.print(f"[{W}]{text}[/]")
-    return text
+    full = ""
+    with urllib.request.urlopen(req, timeout=120) as resp:
+        for raw in resp:
+            line = raw.decode("utf-8").strip()
+            if not line.startswith("data:"):
+                continue
+            data_str = line[5:].strip()
+            if data_str in ("[DONE]", ""):
+                continue
+            try:
+                ev = _json.loads(data_str)
+            except _json.JSONDecodeError:
+                continue
+            chunk = (ev.get("candidates", [{}])[0]
+                       .get("content", {})
+                       .get("parts", [{}])[0]
+                       .get("text", "") or "")
+            if chunk:
+                full += chunk
+                sys.stdout.write(chunk)
+                sys.stdout.flush()
+    print()
+    return full
 
 
 # ── startup screen ────────────────────────────────────────────────────────────
