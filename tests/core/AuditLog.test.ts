@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import fs   from 'fs';
+import fs from 'fs';
 import path from 'path';
-import os   from 'os';
+import os from 'os';
 import { AuditLog } from '../../src/core/AuditLog.js';
 
 const tmpPath = path.join(os.tmpdir(), `orlix-test-audit-${Date.now()}.jsonl`);
@@ -9,11 +9,20 @@ const tmpPath = path.join(os.tmpdir(), `orlix-test-audit-${Date.now()}.jsonl`);
 describe('AuditLog', () => {
   let log: AuditLog;
 
-  beforeEach(() => { log = new AuditLog(tmpPath); });
-  afterEach(() => { if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath); });
+  beforeEach(() => {
+    log = new AuditLog(tmpPath);
+  });
+  afterEach(() => {
+    if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath);
+  });
 
   it('writes a receipt with id and timestamp', () => {
-    const r = log.write({ intent: 'Test intent', context: 'ctx', action: 'test_action', approval: 'auto' });
+    const r = log.write({
+      intent: 'Test intent',
+      context: 'ctx',
+      action: 'test_action',
+      approval: 'auto',
+    });
     expect(r.id).toMatch(/^receipt-/);
     expect(r.status).toBe('pending');
     expect(r.rollback.available).toBe(true);
@@ -31,6 +40,11 @@ describe('AuditLog', () => {
     const r = log.write({ intent: 'i', context: 'c', action: 'a', approval: 'auto' });
     log.fail(r.id, 'something broke');
     expect(log.get(r.id)?.status).toBe('failed');
+  });
+
+  it('throws when updating an unknown receipt', () => {
+    expect(() => log.verify('missing', 'done')).toThrow('Receipt not found');
+    expect(() => log.fail('missing', 'bad')).toThrow('Receipt not found');
   });
 
   it('returns null for unknown id', () => {

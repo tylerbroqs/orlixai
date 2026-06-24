@@ -7,9 +7,11 @@ const DEFAULT_PATH = path.join(os.homedir(), '.orlix', 'audit.jsonl');
 
 export class AuditLog {
   readonly filePath: string;
+  private readonly lockPath: string;
 
   constructor(filePath = DEFAULT_PATH) {
     this.filePath = filePath;
+    this.lockPath = `${filePath}.lock`;
   }
 
   write(input: Omit<Receipt, 'id' | 'timestamp' | 'status' | 'rollback'>): Receipt {
@@ -24,16 +26,22 @@ export class AuditLog {
       ...input,
     };
 
-    fs.appendFileSync(this.filePath, JSON.stringify(receipt) + '\n', 'utf8');
+    this._withLock(() => {
+      fs.appendFileSync(this.filePath, JSON.stringify(receipt) + '\n', 'utf8');
+    });
     return receipt;
   }
 
   verify(id: string, outcome: string): void {
-    this._update(id, { status: 'verified', outcome });
+    if (!this._update(id, { status: 'verified', outcome })) {
+      throw new Error(`Receipt not found: ${id}`);
+    }
   }
 
   fail(id: string, reason: string): void {
-    this._update(id, { status: 'failed', outcome: reason });
+    if (!this._update(id, { status: 'failed', outcome: reason })) {
+      throw new Error(`Receipt not found: ${id}`);
+    }
   }
 
   rollback(id: string): void {
@@ -43,10 +51,11 @@ export class AuditLog {
     if (new Date(receipt.rollback.expiresAt) < new Date()) {
       throw new Error(`Rollback expired for: ${id}`);
     }
-    this._update(id, {
+    const updated = this._update(id, {
       status: 'rolled_back',
       rollback: { available: false, expiresAt: receipt.rollback.expiresAt },
     });
+    if (!updated) throw new Error(`Receipt not found: ${id}`);
   }
 
   get(id: string): Receipt | null {
@@ -81,18 +90,56 @@ export class AuditLog {
     };
   }
 
-  private _update(id: string, patch: Partial<Receipt>): void {
-    if (!fs.existsSync(this.filePath)) return;
-    const lines = fs.readFileSync(this.filePath, 'utf8').split('\n').filter(Boolean);
-    const updated = lines.map((line) => {
-      try {
-        const r = JSON.parse(line) as Receipt;
-        return r.id === id ? JSON.stringify({ ...r, ...patch }) : line;
-      } catch {
-        return line;
-      }
+  private _update(id: string, patch: Partial<Receipt>): boolean {
+    return this._withLock(() => {
+      if (!fs.existsSync(this.filePath)) return false;
+      let found = false;
+      const lines = fs.readFileSync(this.filePath, 'utf8').split('\n').filter(Boolean);
+      const updated = lines.map((line) => {
+        try {
+          const r = JSON.parse(line) as Receipt;
+          if (r.id !== id) return line;
+          found = true;
+          return JSON.stringify({ ...r, ...patch });
+        } catch {
+          return line;
+        }
+      });
+      if (!found) return false;
+      const tmpPath = `${this.filePath}.${process.pid}.${Date.now()}.tmp`;
+      fs.writeFileSync(tmpPath, updated.join('\n') + '\n', 'utf8');
+      fs.renameSync(tmpPath, this.filePath);
+      return true;
     });
-    fs.writeFileSync(this.filePath, updated.join('\n') + '\n', 'utf8');
+  }
+
+  private _withLock<T>(fn: () => T): T {
+    const dir = path.dirname(this.filePath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+    const deadline = Date.now() + 5_000;
+    let fd: number | null = null;
+    while (fd === null) {
+      try {
+        fd = fs.openSync(this.lockPath, 'wx');
+      } catch (err) {
+        if ((err as NodeJS.ErrnoException).code !== 'EEXIST' || Date.now() > deadline) {
+          throw err;
+        }
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 10);
+      }
+    }
+
+    try {
+      return fn();
+    } finally {
+      fs.closeSync(fd);
+      try {
+        fs.unlinkSync(this.lockPath);
+      } catch {
+        // Best effort cleanup; a later lock attempt will time out if this remains.
+      }
+    }
   }
 
   private _receiptId(): string {

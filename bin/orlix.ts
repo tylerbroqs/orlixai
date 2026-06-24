@@ -61,8 +61,10 @@ function loadConfig(): AppConfig {
 }
 
 function saveConfig(cfg: AppConfig): void {
-  if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR, { recursive: true });
-  fs.writeFileSync(CONFIG_FILE, JSON.stringify(cfg, null, 2), 'utf8');
+  if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR, { recursive: true, mode: 0o700 });
+  fs.chmodSync(CONFIG_DIR, 0o700);
+  fs.writeFileSync(CONFIG_FILE, JSON.stringify(cfg, null, 2), { encoding: 'utf8', mode: 0o600 });
+  fs.chmodSync(CONFIG_FILE, 0o600);
 }
 
 // ── providers & sources ───────────────────────────────────────────────────────

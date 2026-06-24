@@ -103,4 +103,13 @@ describe('Memory', () => {
       expect(exported.goals).toHaveLength(1);
     });
   });
+
+  describe('load', () => {
+    it('refuses to replace corrupt JSON with an empty store', () => {
+      fs.writeFileSync(tmpPath, '{bad json', 'utf8');
+
+      expect(() => new Memory(tmpPath).load()).toThrow('Memory file is not valid JSON');
+      expect(fs.readFileSync(tmpPath, 'utf8')).toBe('{bad json');
+    });
+  });
 });
