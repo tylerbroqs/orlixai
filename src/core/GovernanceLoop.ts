@@ -34,6 +34,7 @@ export class GovernanceLoop extends EventEmitter {
   private _running = false;
   private _intervalId: ReturnType<typeof setInterval> | null = null;
   private _pending: Decision[] = [];
+  private _pendingSeq = 0;
 
   constructor(opts: GovernanceLoopOptions) {
     super();
@@ -123,7 +124,7 @@ export class GovernanceLoop extends EventEmitter {
   private async _act(decisions: Decision[]): Promise<Receipt[]> {
     const receipts: Receipt[] = [];
     for (const decision of decisions) {
-      decision.id = `pend-${Date.now().toString(36)}`;
+      decision.id = this._pendingId();
       if (canActWithoutApproval(this.tier)) {
         receipts.push(await this._execute(decision, 'auto'));
       } else {
@@ -189,6 +190,11 @@ export class GovernanceLoop extends EventEmitter {
       }
     }
     return receipt;
+  }
+
+  private _pendingId(): string {
+    this._pendingSeq += 1;
+    return `pend-${Date.now().toString(36)}-${this._pendingSeq.toString(36)}`;
   }
 
   private _feedback(

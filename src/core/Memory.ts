@@ -23,8 +23,9 @@ export class Memory {
     if (fs.existsSync(this.filePath)) {
       try {
         this._data = JSON.parse(fs.readFileSync(this.filePath, 'utf8')) as MemoryStore;
-      } catch {
-        this._data = this._empty();
+      } catch (err) {
+        this._data = null;
+        throw new Error(`Memory file is not valid JSON: ${this.filePath}`, { cause: err });
       }
     } else {
       this._data = this._empty();
